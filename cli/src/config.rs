@@ -1,7 +1,7 @@
 use log::*;
 use anyhow::*;
-use serde::{Serialize, Deserialize, Serializer};
-use std::{fs, collections::BTreeMap, path::PathBuf, borrow::Borrow};
+use serde::{Serialize, Deserialize};
+use std::{fs, collections::BTreeMap, path::PathBuf};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DomainConfig {
@@ -34,6 +34,7 @@ impl Default for DomainConfig {
 }
 
 impl DomainConfig {
+	#![allow(dead_code)]
 	pub fn with_length(self, length: usize) -> Self {
 		Self {
 			length,

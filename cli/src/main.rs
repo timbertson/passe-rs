@@ -8,7 +8,6 @@ use clap::{App, Arg};
 
 use crate::{password::*, config::{DomainConfig, Config}};
 
-
 pub fn main() -> Result<()> {
 	let app = App::new("passe")
 		.arg(Arg::with_name("add").long("add"))

@@ -1,0 +1,16 @@
+[package]
+name = "passe-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+passe = { path = "../cli" }
+anyhow = "1"
+log = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+bcrypt-pbkdf = "0.9"
+rand = "0.8"
+rocket = { version = "0.5.0-rc.2", features = ["json"] }
+shellexpand = "1"
+base64 = "0.20.0-alpha.1"
