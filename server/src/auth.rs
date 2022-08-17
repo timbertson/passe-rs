@@ -1,5 +1,6 @@
 use std::{collections::HashMap, time::SystemTime};
 
+use crate::request::AuthenticatedUser;
 use crate::storage::Persistence;
 use crate::storage::File;
 use rand::RngCore;
@@ -92,6 +93,23 @@ pub struct Authentication {
 	pub token: String,
 }
 
+// #[async_trait]
+// impl<'r> rocket::request::FromRequest<'r> for Authentication {
+// 	type Error = anyhow::Error;
+// 	// TODO validate here? Or just return the request?
+
+// 	async fn from_request(request: &'r rocket::Request<'_>) -> Outcome<Self, Self::Error> {
+// 		match request.headers().get_one("authorization") {
+// 			None => Outcome::Failure((http::Status::BadRequest, anyhow!("Missing `authorization` header"))),
+// 			Some(header) => match serde_json::from_str(header) {
+// 				Result::Ok(auth) => Outcome::Success(auth),
+// 				Result::Err(err) => Outcome::Failure((http::Status::BadRequest, err.into())),
+// 			}
+// 		}
+// 	}
+// }
+
+
 fn now() -> Result<EpochSeconds> {
 	let sys = SystemTime::now();
 	let secs = sys.duration_since(SystemTime::UNIX_EPOCH)?.as_secs();
@@ -176,9 +194,8 @@ impl UserDB {
 		self.users.get_mut(username).ok_or_else(||anyhow!("Unauthenticated!"))
 	}
 	
-	pub fn user_db(&mut self, auth: &Authentication) -> Result<passe::config::ConfigFile> {
-		self.validate(auth)?;
-		Self::load_file(self.persistence.as_ref(), File::UserDB(&auth.user))
+	pub fn user_db(&mut self, user: &AuthenticatedUser) -> Result<passe::config::ConfigFile> {
+		Self::load_file(self.persistence.as_ref(), File::UserDB(user.name()))
 	}
 
 	fn is_dirty(&self) -> bool {

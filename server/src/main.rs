@@ -3,24 +3,16 @@
 mod error;
 mod auth;
 mod storage;
+mod request;
 
-use std::sync::{Mutex, MutexGuard};
-use std::ops::Deref;
 use rocket::State;
 use rocket::serde::json::Json;
 
-use auth::{UserDB, LoginRequest, Authentication};
-use serde::{Serialize, Deserialize};
+use auth::{LoginRequest, Authentication};
 use crate::error::HttpResult;
+use crate::request::*;
 
 use anyhow::*;
-
-struct DbMutex(Mutex<UserDB>);
-impl DbMutex {
-	fn lock(&self) -> MutexGuard<'_, UserDB> {
-		self.0.lock().unwrap()
-	}
-}
 
 #[get("/")]
 fn index() -> String {
@@ -42,31 +34,19 @@ fn login(data: Json<LoginRequest>, state: &State<DbMutex>) -> HttpResult<Json<Au
 	}))
 }
 
-#[post("/authenticate", data="<data>")]
-fn authenticate(data: Json<Authentication>, state: &State<DbMutex>) -> HttpResult<()> {
-	state.lock().validate(data.deref())?;
+#[post("/authenticate")]
+fn authenticate(_user: AuthenticatedUser) -> HttpResult<()> {
 	Result::Ok(())
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct PostDB {
-	authentication: Authentication,
-	contents: String, // TODO
-}
-
-#[get("/db", data="<data>")]
-fn get_db(data: Json<Authentication>, state: &State<DbMutex>) -> HttpResult<&'static str> {
-	state.lock().validate(data.deref())?;
-	Result::Ok("TODO")
+#[get("/db")]
+fn get_db(user: AuthenticatedUser, state: &State<DbMutex>) -> HttpResult<Json<passe::config::ConfigFile>> {
+	Result::Ok(Json(state.lock().user_db(&user)?))
 }
 
 #[post("/db", data="<data>")]
-fn post_db(data: Json<PostDB>, state: &State<DbMutex>) -> HttpResult<Json<passe::config::ConfigFile>> {
-	Result::Ok(Json(state.lock().user_db(&data.authentication)?))
-}
-
-fn init_state() -> Result<DbMutex> {
-	Ok(DbMutex(Mutex::new(UserDB::new(storage::FsPersistence)?)))
+fn post_db(data: String, user: AuthenticatedUser, state: &State<DbMutex>) -> HttpResult<Json<passe::config::ConfigFile>> {
+	Result::Ok(Json(state.lock().user_db(&user)?))
 }
 
 #[launch]
@@ -76,7 +56,7 @@ fn rocket() -> _ {
 		..rocket::Config::release_default()
 	};
 	rocket::custom(config)
-		.manage(init_state().unwrap())
+		.manage(DbMutex::new().unwrap())
 		.mount("/", routes![
 			index,
 			register,
