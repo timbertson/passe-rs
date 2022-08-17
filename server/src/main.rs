@@ -5,14 +5,13 @@ mod auth;
 mod storage;
 
 use std::sync::{Mutex, MutexGuard};
-use std::{path::PathBuf, ops::Deref};
+use std::ops::Deref;
 use rocket::State;
 use rocket::serde::json::Json;
 
-use auth::{UserDB, LoginRequest, Authentication, Token};
+use auth::{UserDB, LoginRequest, Authentication};
 use serde::{Serialize, Deserialize};
-use storage::Persistence;
-use crate::error::{HttpResult};
+use crate::error::HttpResult;
 
 use anyhow::*;
 
@@ -62,9 +61,8 @@ fn get_db(data: Json<Authentication>, state: &State<DbMutex>) -> HttpResult<&'st
 }
 
 #[post("/db", data="<data>")]
-fn post_db(data: Json<PostDB>, state: &State<DbMutex>) -> HttpResult<&'static str> {
-	state.lock().validate(&data.authentication)?;
-	Result::Ok("TODO")
+fn post_db(data: Json<PostDB>, state: &State<DbMutex>) -> HttpResult<Json<passe::config::ConfigFile>> {
+	Result::Ok(Json(state.lock().user_db(&data.authentication)?))
 }
 
 fn init_state() -> Result<DbMutex> {
@@ -73,7 +71,11 @@ fn init_state() -> Result<DbMutex> {
 
 #[launch]
 fn rocket() -> _ {
-	rocket::build()
+	let config = rocket::Config {
+		log_level: rocket::log::LogLevel::Normal,
+		..rocket::Config::release_default()
+	};
+	rocket::custom(config)
 		.manage(init_state().unwrap())
 		.mount("/", routes![
 			index,

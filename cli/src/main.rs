@@ -1,12 +1,10 @@
-mod password;
-mod config;
-
 use clipboard::{ClipboardProvider, ClipboardContext};
 use log::*;
 use anyhow::*;
 use clap::{App, Arg};
 
-use crate::{password::*, config::{DomainConfig, Config}};
+use passe::*;
+use passe::{password::*, config::{DomainConfig, Config}};
 
 pub fn main() -> Result<()> {
 	let app = App::new("passe")

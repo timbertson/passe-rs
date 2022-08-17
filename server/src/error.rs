@@ -20,6 +20,7 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for HttpError {
 		Response::build()
 			.status(http::Status::InternalServerError)
 			.header(http::ContentType::JSON)
+			.sized_body(None, std::io::Cursor::new(format!("{:?}", &self.0)))
 			.ok()
 	}
 }

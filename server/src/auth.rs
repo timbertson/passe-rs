@@ -6,6 +6,8 @@ use rand::RngCore;
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
 use anyhow::*;
 
+const MAX_TOKENS: usize = 15;
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct PasswordConfig {
 	iterations: u32,
@@ -34,8 +36,8 @@ impl Password {
 		Ok(Password { config, value: value.into() })
 	}
 
-	fn hash(password: &str, config: &PasswordConfig) -> Result<[u8; 128]> {
-		let mut output: [u8; 128] = [0; 128];
+	fn hash(password: &str, config: &PasswordConfig) -> Result<[u8; 32]> {
+		let mut output: [u8; 32] = [0; 32];
 		bcrypt_pbkdf::bcrypt_pbkdf(password, &config.salt, config.iterations, &mut output)?;
 		Ok(output)
 	}
@@ -57,7 +59,7 @@ pub struct Token {
 impl Token {
 	fn new() -> Result<Token> {
 		let mut rng = rand::thread_rng();
-		let mut token_bytes: [u8; 64] = [0; 64];
+		let mut token_bytes: [u8; 24] = [0; 24];
 		rng.try_fill_bytes(&mut token_bytes)?;
 		let mut expires = now()?;
 		expires.0 += EXPIRY_SECONDS;
@@ -113,6 +115,9 @@ impl User {
 	pub fn expire_tokens(&mut self) -> Result<()> {
 		let min = now()?;
 		self.tokens.retain_mut(|tok| tok.expires > min);
+		while self.tokens.len() > MAX_TOKENS {
+			self.tokens.remove(0);
+		}
 		Ok(())
 	}
 
@@ -134,14 +139,6 @@ pub struct UserDB {
 }
 
 impl UserDB {
-	fn load_file<T, P: Persistence + ?Sized>(persistence: &P, file: File) -> Result<T> where T: DeserializeOwned + Default {
-		let contents = persistence.load(file)?;
-		match contents {
-			Some(contents) => Ok(serde_json::from_str(&contents)?),
-			None => Ok(Default::default()),
-		}
-	}
-
 	pub fn new<P: Persistence>(persistence: P) -> Result<UserDB> {
 		let users: HashMap<String, User> = Self::load_file(&persistence, File::LoginDB)?;
 		Ok(Self {
@@ -152,6 +149,7 @@ impl UserDB {
 	}
 	
 	pub fn register(&mut self, request: &LoginRequest) -> Result<()> {
+		info!("Registering: {:?}", &request.user);
 		if self.users.contains_key(&request.user) {
 			Err(anyhow!("Registration error"))
 		} else {
@@ -174,8 +172,13 @@ impl UserDB {
 		user.validate_token(&request.token)
 	}
 	
-	pub fn get_mut(&mut self, username: &str) -> Result<&mut User> {
+	fn get_mut(&mut self, username: &str) -> Result<&mut User> {
 		self.users.get_mut(username).ok_or_else(||anyhow!("Unauthenticated!"))
+	}
+	
+	pub fn user_db(&mut self, auth: &Authentication) -> Result<passe::config::ConfigFile> {
+		self.validate(auth)?;
+		Self::load_file(self.persistence.as_ref(), File::UserDB(&auth.user))
 	}
 
 	fn is_dirty(&self) -> bool {
@@ -192,10 +195,15 @@ impl UserDB {
 
 	fn save_file<T, P: Persistence + ?Sized>(persistence: &P, file: File, t: &T) -> Result<()> where T: Serialize {
 		info!("Saving {:?}", file);
-		persistence.save(file, &serde_json::to_string(t)?)
+		persistence.save(file, &serde_json::to_string_pretty(t)?)
 	}
 
-	pub fn serialize(&self) -> Result<String> {
-		Ok(serde_json::to_string(&self.users)?)
+	fn load_file<T, P: Persistence + ?Sized>(persistence: &P, file: File) -> Result<T> where T: DeserializeOwned + Default {
+		info!("Loading {:?}", file);
+		let contents = persistence.load(file)?;
+		match contents {
+			Some(contents) => Ok(serde_json::from_str(&contents)?),
+			None => Ok(Default::default()),
+		}
 	}
 }
