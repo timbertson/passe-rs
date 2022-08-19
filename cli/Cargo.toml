@@ -1,17 +1,20 @@
 [package]
-name = "passe"
+name = "passe-cli"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "passe"
+
 [dependencies]
-base64 = "0.20.0-alpha.1"
+passe = { path = "../common" }
 clap = { version = "3.2" }
 anyhow = "1"
 rpassword = "7.0"
 log = "0.4"
-md5 = "0.7"
 shellexpand = "1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 clipboard = "0.5"
 rprompt = "1"
+ureq = { version = "2", features = ["json"] }

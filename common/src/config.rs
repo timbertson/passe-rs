@@ -1,7 +1,9 @@
 use log::*;
 use anyhow::*;
 use serde::{Serialize, Deserialize};
-use std::{fs, collections::BTreeMap, path::PathBuf};
+use std::{fs, collections::BTreeMap, path::PathBuf, ops::Deref};
+
+use crate::auth::Authentication;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DomainConfig {
@@ -44,19 +46,33 @@ impl DomainConfig {
 	}
 }
 
+type Changes = BTreeMap<String, Change<DomainConfig>>;
+type Domains = BTreeMap<String, DomainConfig>;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ConfigFile {
 	#[serde(default)]
-	credentials: Option<StoredCredentials>,
+	pub authentication: Option<Authentication>,
 
 	#[serde(default)]
 	defaults: DomainConfig,
 
 	#[serde(default)]
-	domains: BTreeMap<String, DomainConfig>,
+	domains: Domains,
 
 	#[serde(default)]
-	changes: BTreeMap<String, Change<DomainConfig>>,
+	changes: Changes,
+}
+
+impl Default for ConfigFile {
+	fn default() -> Self {
+		Self {
+			authentication: Default::default(),
+			defaults: Default::default(),
+			domains: Default::default(),
+			changes: Default::default(),
+		}
+	}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -89,25 +105,16 @@ impl<T> Defaulted<T> {
 	}
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct StoredCredentials {
-	user: String,
-	contents: String,
-}
-
 pub struct Config {
-	stored: ConfigFile,
-	unsaved_changes: Option<BTreeMap<String, Change<DomainConfig>>>
+	pub data: ConfigFile,
+	pub dirty: bool,
 }
 
-impl Default for ConfigFile {
-	fn default() -> Self {
-		Self {
-			credentials: Default::default(),
-			defaults: Default::default(),
-			domains: Default::default(),
-			changes: Default::default(),
-		}
+impl Deref for Config {
+	type Target = ConfigFile;
+
+	fn deref(&self) -> &Self::Target {
+		&self.data
 	}
 }
 
@@ -118,39 +125,45 @@ impl Config {
 
 	pub fn load_user() -> Result<Config> {
 		let path = Self::user_path();
-		let stored = if path.exists() {
+		let data = if path.exists() {
 			let contents = fs::read_to_string(&path)?;
-			let stored = serde_json::from_str(&contents)
-				.with_context(|| anyhow!("Processing {:?}", &path))?;
-			stored
+			serde_json::from_str::<ConfigFile>(&contents)
+				.with_context(|| anyhow!("Processing {:?}", &path))?
 		} else {
 			ConfigFile::default()
 		};
-		Ok(Self { stored, unsaved_changes: None })
+		Ok(Self { data, dirty: false })
 	}
 
 	pub fn save_user(&mut self) -> Result<()> {
-		if let Some(changes) = &self.unsaved_changes {
+		if self.dirty {
 			let path = Self::user_path();
 			info!("Storing {}", &path.to_string_lossy());
-			self.stored.changes = changes.to_owned();
-			fs::write(&Self::user_path(), serde_json::to_string_pretty(&self.stored)?)?;
-			self.unsaved_changes = None;
+			fs::write(&Self::user_path(), serde_json::to_string_pretty(&self.data)?)?;
+			self.dirty = false;
 		}
 		Ok(())
 	}
 	
+	pub fn changes(&self) -> &Changes {
+		&self.data.changes
+	}
+	
 	pub fn domain_list(&self) -> impl Iterator<Item=&String> + '_ {
-		self.stored.domains.keys().into_iter()
+		self.domains.keys().into_iter()
 	}
 
 	fn override_for(&self, domain: &str) -> Option<&Change<DomainConfig>> {
-		let unsaved: Option<&Change<DomainConfig>> = self.unsaved_changes.as_ref().and_then(|m| m.get(domain));
-		unsaved.or_else(||self.stored.changes.get(domain))
+		self.changes.get(domain)
+	}
+	
+	pub fn post_sync(&mut self, merged: Domains) {
+		self.data.domains = merged;
+		self.data.changes = Default::default();
 	}
 
 	pub fn for_domain(&self, domain: &str) -> Defaulted<&DomainConfig> {
-		let stored = self.stored.domains.get(domain);
+		let stored = self.domains.get(domain);
 		let found = match self.override_for(domain) {
 			Some(Change::Delete) => None,
 			Some(Change::Set(ch)) => Some(ch),
@@ -158,12 +171,12 @@ impl Config {
 		};
 		match found {
 			Some(f) => Defaulted::Explicit(f),
-			None => Defaulted::Default(&self.stored.defaults)
+			None => Defaulted::Default(&self.defaults)
 		}
 	}
 
 	pub fn add(&mut self, domain: String, domain_config: DomainConfig) {
-		let unsaved = self.unsaved_changes.get_or_insert_with(Default::default);
-		unsaved.insert(domain, Change::Set(domain_config));
+		self.data.changes.insert(domain, Change::Set(domain_config));
+		self.dirty = true;
 	}
 }

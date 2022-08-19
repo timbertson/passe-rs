@@ -3,6 +3,7 @@ use std::{collections::HashMap, time::SystemTime};
 use crate::request::AuthenticatedUser;
 use crate::storage::Persistence;
 use crate::storage::File;
+use passe::auth::*;
 use rand::RngCore;
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
 use anyhow::*;
@@ -80,35 +81,6 @@ impl User {
 		User { password, tokens: Vec::new() }
 	}
 }
-
-#[derive(Deserialize)]
-pub struct LoginRequest {
-	pub user: String,
-	pub password: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Authentication {
-	pub user: String,
-	pub token: String,
-}
-
-// #[async_trait]
-// impl<'r> rocket::request::FromRequest<'r> for Authentication {
-// 	type Error = anyhow::Error;
-// 	// TODO validate here? Or just return the request?
-
-// 	async fn from_request(request: &'r rocket::Request<'_>) -> Outcome<Self, Self::Error> {
-// 		match request.headers().get_one("authorization") {
-// 			None => Outcome::Failure((http::Status::BadRequest, anyhow!("Missing `authorization` header"))),
-// 			Some(header) => match serde_json::from_str(header) {
-// 				Result::Ok(auth) => Outcome::Success(auth),
-// 				Result::Err(err) => Outcome::Failure((http::Status::BadRequest, err.into())),
-// 			}
-// 		}
-// 	}
-// }
-
 
 fn now() -> Result<EpochSeconds> {
 	let sys = SystemTime::now();

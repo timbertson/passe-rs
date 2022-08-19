@@ -8,7 +8,8 @@ mod request;
 use rocket::State;
 use rocket::serde::json::Json;
 
-use auth::{LoginRequest, Authentication};
+use passe::auth::{LoginRequest, Authentication};
+
 use crate::error::HttpResult;
 use crate::request::*;
 
