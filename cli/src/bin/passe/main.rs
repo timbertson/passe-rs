@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use clipboard::{ClipboardProvider, ClipboardContext};
 use log::*;
 use anyhow::*;
@@ -13,6 +15,7 @@ pub fn main() -> Result<()> {
 	let app = App::new("passe")
 		.arg(Arg::with_name("edit").long("edit"))
 		.arg(Arg::with_name("sync").long("sync"))
+		.arg(Arg::with_name("full").long("full").help("Do a full (initial) sync"))
 		.arg(Arg::with_name("list").long("list").short('l'))
 		.arg(Arg::with_name("domain"))
 	;
@@ -36,7 +39,12 @@ pub fn main() -> Result<()> {
 
 	} else if opts.contains_id("sync") {
 		info!("Syncing ...");
-		let data = serde_json::to_string(config.changes())?;
+		let changes = if opts.contains_id("full") {
+			Cow::Owned(config.full_changes())
+		} else {
+			Cow::Borrowed(config.changes())
+		};
+		let data = serde_json::to_string(&changes)?;
 		let sync_result = authed_request(&mut config, "db", Some(&data))?;
 		config.post_sync(sync_result);
 
@@ -135,8 +143,8 @@ impl AuthManager for Config {
 	fn ask_credentials(&self) -> Result<LoginRequest> {
 		let existing = self.get().map(|auth| &auth.user);
 		let prompt_suffix = match existing {
-			Some(u) => format!("[{}]", u),
-			None => "".to_owned(),
+			Some(u) => Cow::Owned(format!("[{}]", u)),
+			None => Cow::Borrowed(""),
 		};
 		let mut user = rprompt::prompt_reply_stderr(&format!("User: {}", prompt_suffix))?;
 		if user.is_empty() {

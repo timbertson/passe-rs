@@ -7,7 +7,7 @@ edition = "2021"
 name = "passe"
 
 [dependencies]
-passe = { path = "../common" }
+passe = { path = "../core" }
 clap = { version = "3.2" }
 anyhow = "1"
 rpassword = "7.0"

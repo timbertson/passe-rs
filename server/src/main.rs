@@ -6,7 +6,9 @@ mod storage;
 mod request;
 
 use rocket::State;
+use rocket::response;
 use rocket::serde::json::Json;
+use rocket::fs::FileServer;
 
 use passe::auth::{LoginRequest, Authentication};
 
@@ -16,8 +18,9 @@ use crate::request::*;
 use anyhow::*;
 
 #[get("/")]
-fn index() -> String {
-	format!("Hello, world!")
+fn index() -> response::Redirect {
+	// TODO internal redirect instead of exposing URL?
+	response::Redirect::to("/static/index.html")
 }
 
 #[post("/register", data="<data>")]
@@ -66,4 +69,6 @@ fn rocket() -> _ {
 			get_db,
 			post_db
 		])
+		.mount("/static", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/static")))
+		.mount("/pkg", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/pkg")))
 }

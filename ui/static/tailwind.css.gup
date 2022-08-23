@@ -1,0 +1,3 @@
+#!bash -eu
+gup --always
+cd ../ && tailwindcss -o "$1" --config ./tailwind.config.js

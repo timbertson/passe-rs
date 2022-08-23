@@ -148,6 +148,14 @@ impl Config {
 	pub fn changes(&self) -> &Changes {
 		&self.data.changes
 	}
+
+	pub fn full_changes(&self) -> Changes {
+		let mut result: Changes = self.data.domains.iter()
+			.map(|(k,v)| (k.clone(), Change::Set(v.clone())))
+			.collect();
+		result.append(&mut self.data.changes.clone());
+		result
+	}
 	
 	pub fn domain_list(&self) -> impl Iterator<Item=&String> + '_ {
 		self.domains.keys().into_iter()

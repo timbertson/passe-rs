@@ -1,0 +1,4 @@
+#!bash -e
+gup --always
+gup -u ./static/tailwind.css
+wasm-pack build --target web --out-name package

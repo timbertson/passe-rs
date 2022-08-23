@@ -1,0 +1,12 @@
+[config]
+skip_core_tasks = true
+
+[tasks.build]
+description = "Build with wasm-pack"
+command = "wasm-pack"
+args = ["build", "--target", "web", "--out-name", "package", "--dev"]
+
+[tasks.build_release]
+description = "Build with wasm-pack in release mode"
+command = "wasm-pack"
+args = ["build", "--target", "web", "--out-name", "package"]
