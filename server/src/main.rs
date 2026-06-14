@@ -10,7 +10,8 @@ use rocket::response;
 use rocket::serde::json::Json;
 use rocket::fs::FileServer;
 
-use passe::auth::{LoginRequest, Authentication};
+use passe_core::auth::{LoginRequest, Authentication};
+use passe_core::config;
 
 use crate::error::HttpResult;
 use crate::request::*;
@@ -44,14 +45,14 @@ fn authenticate(_user: AuthenticatedUser) -> HttpResult<()> {
 }
 
 #[get("/db")]
-fn get_db(user: AuthenticatedUser, state: &State<DbMutex>) -> HttpResult<Json<passe::config::ConfigFile>> {
+fn get_db(user: AuthenticatedUser, state: &State<DbMutex>) -> HttpResult<Json<config::ConfigFile>> {
 	Result::Ok(Json(state.lock().user_db(&user)?))
 }
 
-#[post("/db", data="<data>")]
-fn post_db(data: String, user: AuthenticatedUser, state: &State<DbMutex>) -> HttpResult<Json<passe::config::ConfigFile>> {
-	Result::Ok(Json(state.lock().user_db(&user)?))
-}
+// #[post("/db", data="<data>")]
+// fn post_db(data: String, user: AuthenticatedUser, state: &State<DbMutex>) -> HttpResult<Json<config::ConfigFile>> {
+// 	Result::Ok(Json(state.lock().user_db(&user)?))
+// }
 
 #[launch]
 fn rocket() -> _ {
@@ -67,7 +68,7 @@ fn rocket() -> _ {
 			login,
 			authenticate,
 			get_db,
-			post_db
+			// post_db
 		])
 		.mount("/static", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/static")))
 		.mount("/pkg", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/pkg")))

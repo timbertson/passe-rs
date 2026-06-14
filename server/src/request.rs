@@ -4,7 +4,7 @@ use rocket::State;
 use rocket::request::Outcome;
 use rocket::http;
 
-use passe::auth::*;
+use passe_core::auth::*;
 use crate::storage;
 use crate::auth::UserDB;
 

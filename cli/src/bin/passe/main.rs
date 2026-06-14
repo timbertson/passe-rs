@@ -1,14 +1,15 @@
 use std::borrow::Cow;
 
-use clipboard::{ClipboardProvider, ClipboardContext};
+mod clipboard;
+
 use log::*;
 use anyhow::*;
 use clap::{App, Arg};
 
-use passe::*;
-use passe::password::*;
-use passe::config::{DomainConfig, Config};
-use passe::auth::*;
+use passe_core::*;
+use passe_core::password::*;
+use passe_core::config::{DomainConfig, Config};
+use passe_core::auth::*;
 use serde::de::DeserializeOwned;
 
 pub fn main() -> Result<()> {
@@ -58,14 +59,13 @@ pub fn main() -> Result<()> {
 			warn!("** This is a new domain**");
 		}
 		let password = rpassword::prompt_password("Master password: ").unwrap();
-		let gen = || password::generate(Domain(domain), Password(&password), DomainConfig {
+		let generated = password::generate(Domain(domain), Password(&password), DomainConfig {
 			suffix: None,
 			note: None,
 			length: 10,
 		});
 
-		let copied: Result<(), Box<dyn std::error::Error>> = clipboard::ClipboardProvider::new()
-			.and_then(|mut clip: ClipboardContext| clip.set_contents(gen()));
+		let copied: Result<()> = clipboard::copy(&generated);
 		match copied {
 			Result::Ok(()) => {
 				println!("(copied to your clipboard)");
@@ -73,7 +73,7 @@ pub fn main() -> Result<()> {
 			Result::Err(e) => {
 				error!("Clipboard failed: {:?}", e);
 				rpassword::prompt_password("Press return to print password ...").unwrap();
-				println!("{}", gen());
+				println!("{}", &generated);
 			}
 		}
 	}

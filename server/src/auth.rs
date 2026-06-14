@@ -3,7 +3,7 @@ use std::{collections::HashMap, time::SystemTime};
 use crate::request::AuthenticatedUser;
 use crate::storage::Persistence;
 use crate::storage::File;
-use passe::auth::*;
+use passe_core::auth::*;
 use rand::RngCore;
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
 use anyhow::*;
@@ -166,7 +166,7 @@ impl UserDB {
 		self.users.get_mut(username).ok_or_else(||anyhow!("Unauthenticated!"))
 	}
 	
-	pub fn user_db(&mut self, user: &AuthenticatedUser) -> Result<passe::config::ConfigFile> {
+	pub fn user_db(&mut self, user: &AuthenticatedUser) -> Result<passe_core::config::ConfigFile> {
 		Self::load_file(self.persistence.as_ref(), File::UserDB(user.name()))
 	}
 
