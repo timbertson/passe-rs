@@ -1,5 +1,5 @@
 use log::*;
-use base64::engine::fast_portable::{FastPortable, self};
+use base64::{Engine, alphabet, engine};
 
 use crate::config::DomainConfig;
 
@@ -11,7 +11,7 @@ pub struct Password<'a>(pub &'a str);
 struct Gen {
 	value: Vec<u8>,
 	buf: String,
-	engine: FastPortable,
+	engine: engine::GeneralPurpose,
 	// r64_config: CustomConfig,
 	length: usize,
 }
@@ -21,9 +21,9 @@ impl Gen {
 
 		// NOTE: base64 requires lossless encoding.
 		// Hoever SGP reuses 9 & 8, plus A for padding. See `substitute` function below
-		let alpha = base64::alphabet::Alphabet::from_str(
+		let alpha = alphabet::Alphabet::try_from(
 			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789./").unwrap();
-		let engine = fast_portable::FastPortable::from(&alpha, fast_portable::PAD);
+		let engine = engine::GeneralPurpose::new(&alpha, Default::default());
 
 		Self {
 			value: value.into_bytes(),
@@ -56,7 +56,7 @@ impl Gen {
 	fn iterate(&mut self) {
 		self.buf.clear();
 		let digest = md5::compute(&self.value);
-		base64::encode_engine_string(digest.0, &mut self.buf, &self.engine);
+		self.engine.encode_string(digest.0, &mut self.buf);
 		self.value.clear();
 		for b in self.buf.bytes() {
 			self.value.push(Self::substitute(b))

@@ -4,8 +4,9 @@ use crate::request::AuthenticatedUser;
 use crate::storage::Persistence;
 use crate::storage::File;
 use passe_core::auth::*;
-use rand::RngCore;
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
+use rand::Rng;
+use rand::TryRng;
 use anyhow::*;
 
 const MAX_TOKENS: usize = 15;
@@ -18,9 +19,9 @@ pub struct PasswordConfig {
 
 impl PasswordConfig {
 	fn new() -> Self {
-		let mut rng = rand::thread_rng();
+		let mut rng = rand::rng();
 		let mut salt: [u8; 16] = [0; 16];
-		rng.try_fill_bytes(&mut salt).unwrap();
+		rng.fill_bytes(&mut salt);
 		Self { iterations: 10, salt: salt.into() }
 	}
 }
@@ -60,7 +61,7 @@ pub struct Token {
 
 impl Token {
 	fn new() -> Result<Token> {
-		let mut rng = rand::thread_rng();
+		let mut rng = rand::rng();
 		let mut token_bytes: [u8; 24] = [0; 24];
 		rng.try_fill_bytes(&mut token_bytes)?;
 		let mut expires = now()?;

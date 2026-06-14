@@ -126,10 +126,12 @@ impl Config {
 	pub fn load_user() -> Result<Config> {
 		let path = Self::user_path();
 		let data = if path.exists() {
+			info!("Loading {:?}", &path);
 			let contents = fs::read_to_string(&path)?;
 			serde_json::from_str::<ConfigFile>(&contents)
 				.with_context(|| anyhow!("Processing {:?}", &path))?
 		} else {
+			debug!("No config exists at {:?}", &path);
 			ConfigFile::default()
 		};
 		Ok(Self { data, dirty: false })
