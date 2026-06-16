@@ -9,5 +9,7 @@ mkShell {
 		# nodePackages.tailwindcss
 		rust-analyzer # IDE
 		libiconv curl # native libs
+		deno
+		llvmPackages.lld
 	];
 }

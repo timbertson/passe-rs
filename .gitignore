@@ -1,2 +1,3 @@
 target/
 /ui/static/tailwind.css
+ui/public

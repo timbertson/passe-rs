@@ -56,6 +56,7 @@ fn get_db(user: AuthenticatedUser, state: &State<DbMutex>) -> HttpResult<Json<co
 
 #[launch]
 fn rocket() -> _ {
+	env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 	let config = rocket::Config {
 		log_level: rocket::log::LogLevel::Normal,
 		..rocket::Config::release_default()
@@ -71,5 +72,5 @@ fn rocket() -> _ {
 			// post_db
 		])
 		.mount("/static", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/static")))
-		.mount("/pkg", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/pkg")))
+		// .mount("/pkg", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/pkg")))
 }

@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "@deno/vite-plugin": "npm:@deno/vite-plugin@^2.0.2",
+    "@sveltejs/vite-plugin-svelte": "npm:@sveltejs/vite-plugin-svelte@^7.1.2",
+    "rollup": "npm:rollup@^4.62.0",
+    "rollup-plugin-svelte": "npm:rollup-plugin-svelte@^7.2.3",
+    "vite": "npm:vite@^8.0.16",
+    "vite-plugin-wasm": "npm:vite-plugin-wasm@^3.6.0"
+  }
+}
