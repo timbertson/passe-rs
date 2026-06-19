@@ -73,5 +73,5 @@ fn rocket() -> _ {
 		])
 		// these mirror the on-disk layout for consistency, but don't expose anything outside the public folders
 		.mount("/ui/public", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/public")))
-		.mount("/web/public", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../web/public")))
+		.mount("/wasm/public", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../wasm/public")))
 }

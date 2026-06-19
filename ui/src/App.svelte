@@ -1,8 +1,8 @@
 <script>
-import init, { hello } from '../../web/public/package.js'
+import init, { hello } from '../../wasm/public/package.js'
 
 async function load() {
-	let wasm = await init('/web/public/package_bg.wasm')
+	let wasm = await init({ module_or_path: '/wasm/public/package_bg.wasm' })
 	console.log("Loaded!: ", wasm);
 	let response = hello();
 	console.log(response);

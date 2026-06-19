@@ -1,0 +1,6 @@
+#!bash -eu
+gup --always
+cargo build
+
+# build extra resources (wasm & JS)
+gup -u wasm/all ui/all

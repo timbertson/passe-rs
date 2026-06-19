@@ -1,4 +1,5 @@
 target/
 node_modules/
 /ui/public/bundle.js
-/web/build-vars
+/wasm/build-vars
+/build-vars

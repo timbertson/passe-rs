@@ -1,4 +1,4 @@
 #!bash -eu
 
-gup -u ../web/all
+gup -u ../wasm/all
 gup -u public/bundle.js

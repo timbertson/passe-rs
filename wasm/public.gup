@@ -1,0 +1,5 @@
+#!bash -e
+gup --leave
+gup -u ../build-vars/target build-vars/inputs
+gup -u $(cat build-vars/inputs)
+exec cargo make "build_$(cat ../build-vars/target)"

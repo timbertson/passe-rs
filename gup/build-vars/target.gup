@@ -2,9 +2,9 @@
 
 gup --always
 if [ "${RELEASE:-false}" = "true" ]; then
-	echo build_release
+	echo release
 else
-	echo build
+	echo debug
 fi > "$1"
 
 gup --contents "$1"

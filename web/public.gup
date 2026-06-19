@@ -1,5 +1,0 @@
-#!bash -e
-gup --leave
-gup -u build-vars/target build-vars/inputs
-gup -u $(cat build-vars/inputs)
-cargo make "$(cat build-vars/target)"

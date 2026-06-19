@@ -1,5 +1,5 @@
 #!bash -eu
 
 gup --always
-gup -u ../ui/all ../web/all
+gup -u ../ui/all ../wasm/all
 cargo build
