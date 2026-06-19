@@ -21,7 +21,7 @@ use anyhow::*;
 #[get("/")]
 fn index() -> response::Redirect {
 	// TODO internal redirect instead of exposing URL?
-	response::Redirect::to("/static/index.html")
+	response::Redirect::to("/ui/public/index.html")
 }
 
 #[post("/register", data="<data>")]
@@ -71,6 +71,7 @@ fn rocket() -> _ {
 			get_db,
 			// post_db
 		])
-		.mount("/static", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/static")))
-		// .mount("/pkg", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/pkg")))
+		// these mirror the on-disk layout for consistency, but don't expose anything outside the public folders
+		.mount("/ui/public", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/public")))
+		.mount("/web/public", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../web/public")))
 }

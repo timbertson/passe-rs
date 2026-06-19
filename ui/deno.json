@@ -1,10 +1,10 @@
 {
+  "nodeModulesDir": "auto",
   "imports": {
-    "@deno/vite-plugin": "npm:@deno/vite-plugin@^2.0.2",
-    "@sveltejs/vite-plugin-svelte": "npm:@sveltejs/vite-plugin-svelte@^7.1.2",
+    "@rollup/plugin-node-resolve": "npm:@rollup/plugin-node-resolve@^16.0.0",
+    "@rollup/plugin-terser": "npm:@rollup/plugin-terser@^1.0.0",
     "rollup": "npm:rollup@^4.62.0",
     "rollup-plugin-svelte": "npm:rollup-plugin-svelte@^7.2.3",
-    "vite": "npm:vite@^8.0.16",
-    "vite-plugin-wasm": "npm:vite-plugin-wasm@^3.6.0"
+    "svelte": "npm:svelte@^5.56.3"
   }
 }

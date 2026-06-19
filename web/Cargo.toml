@@ -2,6 +2,9 @@
 name = "passe-web"
 version = "0.1.0"
 edition = "2024"
+description = "passe web (WASM) functionality"
+repository = "http://github.com/timbertson/passe-rs"
+license = "GPLv3"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -11,13 +14,12 @@ opt-level = 'z'
 codegen-units = 1
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ['-Os']
+# wasm-opt = ['-Os']
+wasm-opt = false
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
 passe-core = { path = "../core" }
-
-[build-dependencies]
 wasm-bindgen = "*"

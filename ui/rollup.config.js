@@ -1,14 +1,29 @@
 // rollup.config.js
 import svelte from 'rollup-plugin-svelte';
-// import resolve from '@rollup/plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
+import terser from '@rollup/plugin-terser';
 
 export default {
-  input: 'src/main.ts',
-  output: {
-    file: 'public/bundle.js',
-    format: 'iife'
+  onwarn(warning, dfl) {
+    if (warning.code == 'CIRCULAR_DEPENDENCY') {
+      // ignore completely
+      // dfl(warning)
+    } else {
+      throw new Error(`[${warning.code}]: ${warning.message}`);
+    }
   },
+  input: 'src/main.ts',
+  output: [
+    {
+      externalLiveBindings: false,
+      interop: "esModule",
+      format: 'es',
+      // format: 'iife',
+    },
+  ],
+  // treeshake: false,
   plugins: [
+    terser(),
     svelte({
       // By default, all ".svelte" files are compiled
       // extensions: ['.my-custom-extension'],
@@ -55,12 +70,11 @@ export default {
     //     customElement: false
     //   }
     }),
-    // // see NOTICE below
-    // resolve({
-    //   browser: true,
-    //   exportConditions: ['svelte'],
-    //   extensions: ['.svelte']
-    // }),
+    resolve({
+      browser: true,
+      exportConditions: ['svelte'],
+      extensions: ['.svelte']
+    }),
     // ...
   ]
 }

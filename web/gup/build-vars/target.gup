@@ -1,0 +1,10 @@
+#!bash -eu
+
+gup --always
+if [ "${RELEASE:-false}" = "true" ]; then
+	echo build_release
+else
+	echo build
+fi > "$1"
+
+gup --contents "$1"

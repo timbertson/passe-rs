@@ -1,3 +1,4 @@
 target/
-/ui/static/tailwind.css
-ui/public
+node_modules/
+/ui/public/bundle.js
+/web/build-vars

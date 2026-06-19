@@ -1,0 +1,4 @@
+#!bash -eux
+gup --always
+cd .. && deno run --allow-all rollup -c --file="$1"
+gup --contents "$1"
