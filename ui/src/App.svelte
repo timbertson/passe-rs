@@ -1,25 +1,35 @@
-<script>
-import init, { hello } from '../../wasm/public/package.js'
+<script lang="ts">
+import init from '../../wasm/public/package.js'
+import { Db } from './Db';
+import PasswordForm from './PasswordForm.svelte';
+import UserPanel from './UserPanel.svelte';
 
-async function load() {
+async function load(): Promise<Db> {
 	let wasm = await init({ module_or_path: '/wasm/public/package_bg.wasm' })
 	console.log("Loaded!: ", wasm);
-	let response = hello();
-	console.log(response);
+	return Db.loadCached();
 }
 
 let initialize = $state(load().catch((e) => {
 	console.error("Error loading: ", e);
 	throw e;
 }));
+
+// notNull(document.getElementsByTagName('body')).addEventListener('click');
 </script>
 
-
 {#await initialize}
-	<h1>Loading...</h1>
-{:then}
-	<h1>Ready!</h1>
+	<div class="container">
+		<h1>Loading WASM...</h1>
+	</div>
+{:then db}
+	<UserPanel {db}/>
+	<div class="container">
+		<PasswordForm {db}/>
+	</div>
 {:catch e}
-	<h1>Error:</h1>
-	<pre>{e}</pre>
+	<div class="container">
+		<h1>Error:</h1>
+		<pre>{e}</pre>
+	</div>
 {/await}

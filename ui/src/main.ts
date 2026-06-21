@@ -1,11 +1,13 @@
 import { mount } from 'svelte';
 import App from './App.svelte';
+import { notNull } from './util';
 
-mount(App, {
-	target: document.getElementById('app'),
-	props: {
-		name: 'world'
-	}
-});
+const elem = notNull(document.getElementById('app'));
+elem.innerHTML = "";
+try {
+	mount(App, { target: elem });
+} catch(e) {
+	elem.innerText = String(e);
+}
 
 // export default app;

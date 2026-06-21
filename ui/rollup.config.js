@@ -2,11 +2,13 @@
 import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
+import typescript from '@rollup/plugin-typescript';
 
 const isRelease = (Deno.env.get('RELEASE') || 'false') == 'true';
 
 const plugins = [
     svelte({}),
+    typescript(),
     resolve({
       browser: true,
       exportConditions: ['svelte'],

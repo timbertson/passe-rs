@@ -84,9 +84,9 @@ impl Gen {
 	}
 }
 
-pub fn generate(domain: Domain, password: Password, config: DomainConfig) -> String {
+pub fn generate(domain: Domain, password: Password, config: &DomainConfig) -> String {
 	let input = format!("{}{}:{}", password.0, config.suffix.as_deref().unwrap_or(""), domain.0);
-	Gen::new(input, &config).run()
+	Gen::new(input, config).run()
 }
 
 
@@ -99,7 +99,7 @@ pub mod test {
 		let generated = generate(
 			Domain("example.org"),
 			Password("secret"),
-			DomainConfig::default().with_length(10)
+			&DomainConfig::default().with_length(10)
 		);
 		assert_eq!(generated, "tYb1lyMQLA");
 	}

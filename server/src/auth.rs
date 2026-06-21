@@ -3,6 +3,8 @@ use std::{collections::HashMap, time::SystemTime};
 use crate::request::AuthenticatedUser;
 use crate::storage::Persistence;
 use crate::storage::File;
+use base64::engine::general_purpose::STANDARD;
+use base64::engine::Engine;
 use passe_core::auth::*;
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
 use rand::Rng;
@@ -66,7 +68,7 @@ impl Token {
 		rng.try_fill_bytes(&mut token_bytes)?;
 		let mut expires = now()?;
 		expires.0 += EXPIRY_SECONDS;
-		let value = base64::encode(token_bytes);
+		let value = STANDARD.encode(token_bytes);
 		Ok(Self { value, expires })
 	}
 }

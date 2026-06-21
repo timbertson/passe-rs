@@ -40,8 +40,8 @@ fn login(data: Json<LoginRequest>, state: &State<DbMutex>) -> HttpResult<Json<Au
 }
 
 #[post("/authenticate")]
-fn authenticate(_user: AuthenticatedUser) -> HttpResult<()> {
-	Result::Ok(())
+fn authenticate(_user: AuthenticatedUser) -> HttpResult<Json<()>> {
+	Result::Ok(Json(()))
 }
 
 #[get("/db")]

@@ -110,6 +110,12 @@ pub struct Config {
 	pub dirty: bool,
 }
 
+impl Default for Config {
+	fn default() -> Self {
+		Self { data: Default::default(), dirty: false }
+	}
+}
+
 impl Deref for Config {
 	type Target = ConfigFile;
 
@@ -122,19 +128,24 @@ impl Config {
 	fn user_path() -> PathBuf {
 		PathBuf::from(shellexpand::tilde("~/.config/passe/user.json").into_owned())
 	}
+	
+	pub fn deserialize(s: &str) -> Result<Config> {
+		let data = serde_json::from_str::<ConfigFile>(s)
+			.context("Deserializing user config")?;
+		Ok(Self { data, dirty: false })
+	}
 
 	pub fn load_user() -> Result<Config> {
 		let path = Self::user_path();
-		let data = if path.exists() {
+		let result = if path.exists() {
 			info!("Loading {:?}", &path);
 			let contents = fs::read_to_string(&path)?;
-			serde_json::from_str::<ConfigFile>(&contents)
-				.with_context(|| anyhow!("Processing {:?}", &path))?
+			Self::deserialize(&contents).with_context(|| format!("Processing {:?}", &path))?
 		} else {
 			debug!("No config exists at {:?}", &path);
-			ConfigFile::default()
+			Default::default()
 		};
-		Ok(Self { data, dirty: false })
+		Ok(result)
 	}
 
 	pub fn save_user(&mut self) -> Result<()> {

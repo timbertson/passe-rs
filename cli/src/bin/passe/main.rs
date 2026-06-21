@@ -8,7 +8,7 @@ use clap::{Arg, ArgAction, Command};
 
 use passe_core::*;
 use passe_core::password::*;
-use passe_core::config::{DomainConfig, Config};
+use passe_core::config::Config;
 use passe_core::auth::*;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -59,11 +59,7 @@ pub fn main() -> Result<()> {
 			println!("* This is a new domain");
 		}
 		let password = rpassword::prompt_password("Master password: ").unwrap();
-		let generated = password::generate(Domain(domain), Password(&password), DomainConfig {
-			suffix: None,
-			note: None,
-			length: 10,
-		});
+		let generated = password::generate(Domain(domain), Password(&password), domain_config.underlying());
 
 		let copied: Result<()> = clipboard::copy(&generated);
 		match copied {

@@ -19,7 +19,13 @@ wasm-opt = false
 
 [lib]
 crate-type = ["cdylib"]
+path = "src/wasm.rs"
 
 [dependencies]
 passe-core = { path = "../core" }
 wasm-bindgen = "*"
+# serde-wasm-bindgen = "0.6"
+serde = "*"
+serde_json = "*"
+anyhow = "*"
+web-sys = { version = "*", features = ['Headers', 'Request', 'RequestInit', 'RequestMode', 'Response', 'Window'] }

@@ -3,9 +3,11 @@
   "specifiers": {
     "npm:@rollup/plugin-node-resolve@16": "16.0.3_rollup@4.62.0",
     "npm:@rollup/plugin-terser@1": "1.0.0_rollup@4.62.0",
+    "npm:@rollup/plugin-typescript@^12.3.0": "12.3.0_rollup@4.62.0_tslib@2.8.1",
     "npm:rollup-plugin-svelte@^7.2.3": "7.2.3_rollup@4.62.0_svelte@5.56.3",
     "npm:rollup@^4.62.0": "4.62.0",
-    "npm:svelte@^5.56.3": "5.56.3"
+    "npm:svelte@^5.56.3": "5.56.3",
+    "npm:tslib@^2.8.1": "2.8.1"
   },
   "npm": {
     "@jridgewell/gen-mapping@0.3.13": {
@@ -66,6 +68,20 @@
       ],
       "optionalPeers": [
         "rollup"
+      ]
+    },
+    "@rollup/plugin-typescript@12.3.0_rollup@4.62.0_tslib@2.8.1": {
+      "integrity": "sha512-7DP0/p7y3t67+NabT9f8oTBFE6gGkto4SA6Np2oudYmZE/m1dt8RB0SjL1msMxFpLo631qjRCcBlAbq1ml/Big==",
+      "dependencies": [
+        "@rollup/pluginutils@5.4.0_rollup@4.62.0",
+        "resolve",
+        "rollup",
+        "tslib",
+        "typescript"
+      ],
+      "optionalPeers": [
+        "rollup",
+        "tslib"
       ]
     },
     "@rollup/pluginutils@4.2.1": {
@@ -421,6 +437,13 @@
       ],
       "bin": true
     },
+    "tslib@2.8.1": {
+      "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="
+    },
+    "typescript@6.0.3": {
+      "integrity": "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==",
+      "bin": true
+    },
     "zimmerframe@1.1.4": {
       "integrity": "sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ=="
     }
@@ -429,9 +452,11 @@
     "dependencies": [
       "npm:@rollup/plugin-node-resolve@16",
       "npm:@rollup/plugin-terser@1",
+      "npm:@rollup/plugin-typescript@^12.3.0",
       "npm:rollup-plugin-svelte@^7.2.3",
       "npm:rollup@^4.62.0",
-      "npm:svelte@^5.56.3"
+      "npm:svelte@^5.56.3",
+      "npm:tslib@^2.8.1"
     ]
   }
 }
