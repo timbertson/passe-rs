@@ -6,9 +6,10 @@ use passe_core::password;
 use passe_core::password::{Password, Domain};
 
 use web_sys::{Request, RequestInit};
-use passe_core::config;
+use passe_core::config::{self, ConfigFile};
 
 const CONTENT_TYPE: &str = "content-type";
+const AUTHORIZATION: &str = "authorization";
 const JSON_TYPE: &str = "application/json";
 
 
@@ -80,6 +81,26 @@ impl Config {
 		self.0.update_after_login(auth_result?);
 		Ok(())
 	}
+
+	pub fn sync_request(&self) -> JsResult<Request> {
+		let auth = js(self.0.authentication())?;
+		let data = &self.0.data;
+		let opts = RequestInit::new();
+		opts.set_method("POST");
+		opts.set_body(&JsValue::from_str(&serde_json::to_string(&data).expect("Unserializable JSON")));
+		let request = Request::new_with_str_and_init("/db", &opts)?;
+
+		request.headers().set(CONTENT_TYPE, JSON_TYPE)?;
+		request.headers().set(AUTHORIZATION, &serde_json::to_string(auth).expect("Unserializable JSON"))?;
+		Result::Ok(request)
+	}
+
+	pub fn set_db(&mut self, db_json: JsValue) -> JsResult<()> {
+		let mut db: ConfigFile = serde_wasm_bindgen::from_value(db_json)?;
+		db.authentication = self.0.data.authentication.clone();
+		self.0.data = db;
+		Ok(())
+	}
 }
 
 pub fn authenticate_request(auth: &Authentication) -> JsResult<Request> {
@@ -88,6 +109,6 @@ pub fn authenticate_request(auth: &Authentication) -> JsResult<Request> {
 	let request = Request::new_with_str_and_init("/authenticate", &opts)?;
 
 	request.headers().set(CONTENT_TYPE, JSON_TYPE)?;
-	request.headers().set("Authorization", &serde_json::to_string(auth).expect("Unserializable JSON"))?;
+	request.headers().set(AUTHORIZATION, &serde_json::to_string(auth).expect("Unserializable JSON"))?;
 	Result::Ok(request)
 }

@@ -6,6 +6,7 @@ use crate::storage::File;
 use base64::engine::general_purpose::STANDARD;
 use base64::engine::Engine;
 use passe_core::auth::*;
+use passe_core::config::{ConfigFile, Change};
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
 use rand::Rng;
 use rand::TryRng;
@@ -169,8 +170,27 @@ impl UserDB {
 		self.users.get_mut(username).ok_or_else(||anyhow!("Unauthenticated!"))
 	}
 	
-	pub fn user_db(&mut self, user: &AuthenticatedUser) -> Result<passe_core::config::ConfigFile> {
+	pub fn user_db(&mut self, user: &AuthenticatedUser) -> Result<ConfigFile> {
 		Self::load_file(self.persistence.as_ref(), File::UserDB(user.name()))
+	}
+
+	pub fn sync_user_db(&mut self, user: &AuthenticatedUser, client_db: ConfigFile) -> Result<ConfigFile> {
+		let ConfigFile { defaults, changes, .. } = client_db;
+		let ConfigFile { mut domains, .. } = self.user_db(user)?;
+		for (domain, change) in changes {
+			match change {
+				Change::Delete => { domains.remove(&domain); },
+				Change::Set(v) => { domains.insert(domain, v); },
+			}
+		}
+		let merged = ConfigFile {
+			authentication: None,
+			domains,
+			defaults,
+			changes: Default::default(),
+		};
+		Self::save_file(self.persistence.as_ref(), File::UserDB(user.name()), &merged)?;
+		Ok(merged)
 	}
 
 	fn is_dirty(&self) -> bool {

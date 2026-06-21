@@ -46,8 +46,8 @@ impl DomainConfig {
 	}
 }
 
-type Changes = BTreeMap<String, Change<DomainConfig>>;
-type Domains = BTreeMap<String, DomainConfig>;
+pub type Changes = BTreeMap<String, Change<DomainConfig>>;
+pub type Domains = BTreeMap<String, DomainConfig>;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ConfigFile {
@@ -55,13 +55,13 @@ pub struct ConfigFile {
 	pub authentication: Option<Authentication>,
 
 	#[serde(default)]
-	defaults: DomainConfig,
+	pub defaults: DomainConfig,
 
 	#[serde(default)]
-	domains: Domains,
+	pub domains: Domains,
 
 	#[serde(default)]
-	changes: Changes,
+	pub changes: Changes,
 }
 
 impl Default for ConfigFile {
@@ -156,6 +156,10 @@ impl Config {
 			self.update_after_save();
 		}
 		Ok(())
+	}
+	
+	pub fn authentication(&self) -> Result<&Authentication> {
+		self.data.authentication.as_ref().ok_or_else(||anyhow!("Authorization missing"))
 	}
 
 	pub fn update_after_save(&mut self) {

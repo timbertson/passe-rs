@@ -76,10 +76,16 @@ export class Db {
 			return this.login_or_register(this.config.register_request(this.userState.user, this.userState.password));
 		})();
 	}
-
 	
-	// submitAuthenticate = (ev: Event) => {
-	// 	ev.preventDefault();
-	// 	this.userState.loginTask = this.login();
-	// }
+	sync = async () => {
+		this.userState.syncTask = (async () => {
+			const req = this.config.sync_request();
+			const newDb = await fetchReq<Object>(req);
+			console.log("sync completed");
+			this.config.set_db(newDb);
+			this.save();
+			this.userState.invalidateDb += 1;
+			this.userState.syncState = 'in-sync';
+		})();
+	}
 }

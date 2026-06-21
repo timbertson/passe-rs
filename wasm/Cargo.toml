@@ -24,6 +24,7 @@ path = "src/wasm.rs"
 [dependencies]
 passe-core = { path = "../core" }
 wasm-bindgen = "*"
+log = "*"
 serde-wasm-bindgen = "0.6"
 serde = "*"
 serde_json = "*"

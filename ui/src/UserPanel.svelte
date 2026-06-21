@@ -1,5 +1,6 @@
 <script lang="ts">
 import { Db } from './Db';
+import SyncWidget from './SyncWidget.svelte';
 import UserForm from './UserForm.svelte';
 
 const { db }: { db: Db } = $props();
@@ -17,6 +18,15 @@ const { db }: { db: Db } = $props();
 					</div>
 					<div class="col">
 						<span>Logged in: {user}</span>
+						{#await db.userState.syncTask}
+							:syncing...:
+						{:then}
+							:not-syncing:
+							<SyncWidget {db}/>
+						{:catch e}
+							:error -- {e}:
+							<SyncWidget {db}/>
+						{/await}
 					</div>
 				</div>
 			{:catch e}
