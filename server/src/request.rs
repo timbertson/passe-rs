@@ -6,7 +6,7 @@ use rocket::http;
 
 use passe_core::auth::*;
 use crate::storage;
-use crate::auth::UserDB;
+use crate::db::UserDB;
 
 use anyhow::*;
 

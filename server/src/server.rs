@@ -1,7 +1,7 @@
 #[macro_use] extern crate rocket;
 
 mod error;
-mod auth;
+mod db;
 mod storage;
 mod request;
 

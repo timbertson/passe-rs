@@ -3,6 +3,10 @@ name = "passe-server"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "passe-server"
+path = "src/server.rs"
+
 [dependencies]
 passe-core = { path = "../core" }
 
