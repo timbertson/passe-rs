@@ -25,7 +25,7 @@ export async function fetchReq<T>(req: Request): Promise<T> {
 		console.log("Failed response:", contentType);
 		if (contentType === 'application/json') {
 			const responseJson = await response.json();
-			throw new HttpError(response, responseJson.message || `Request failed: ${url}`);
+			throw new HttpError(response, responseJson.message || `Request failed: ${req.url}`);
 		} else {
 			throw new HttpError(response, await response.text());
 		}

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { generate_password } from '../../wasm/public/package.js'
+import { Db } from "./Db.js";
 import { EMPTY } from './util.js';
 
 let domain = $state(EMPTY);
@@ -7,6 +7,8 @@ let domain = $state(EMPTY);
 let password = $state(EMPTY);
 
 let generatedPassword = $state(EMPTY);
+
+const { db }: { db: Db } = $props();
 
 function mask(password: String) {
 	return '*'.repeat(password.length);
@@ -17,7 +19,7 @@ function generate(ev: Event) {
 	if (domain == EMPTY || password == EMPTY) {
 		console.info('empty domain or password');
 	} else {
-		generatedPassword = generate_password(domain, password);
+		generatedPassword = db.generatePassword(domain, password);
 	}
 }
 
@@ -44,6 +46,7 @@ function clearCurrent() {
 	generatedPassword = EMPTY;
 	password = EMPTY;
 }
+
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->

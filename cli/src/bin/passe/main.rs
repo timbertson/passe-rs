@@ -42,7 +42,7 @@ pub fn main() -> Result<()> {
 		};
 		let data = serde_json::to_string(&changes)?;
 		let sync_result = authed_request(&mut config, "db", Some(&data))?;
-		config.post_sync(sync_result);
+		config.update_after_sync(sync_result);
 	} else if opts.get_flag("edit") {
 		let domain = get_domain().context("for --edit")?;
 		let mut domain_config = config.for_domain(&domain).underlying().to_owned();

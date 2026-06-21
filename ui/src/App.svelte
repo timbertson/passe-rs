@@ -1,5 +1,6 @@
 <script lang="ts">
 import init from '../../wasm/public/package.js'
+import { EMPTY_USER_STATE } from './Authentication.js';
 import { Db } from './Db';
 import PasswordForm from './PasswordForm.svelte';
 import UserPanel from './UserPanel.svelte';
@@ -7,7 +8,10 @@ import UserPanel from './UserPanel.svelte';
 async function load(): Promise<Db> {
 	let wasm = await init({ module_or_path: '/wasm/public/package_bg.wasm' })
 	console.log("Loaded!: ", wasm);
-	return Db.loadCached();
+	const userState = $state(EMPTY_USER_STATE);
+	const db = Db.loadCached(userState);
+	db.tryAuthenticate();
+	return db;
 }
 
 let initialize = $state(load().catch((e) => {

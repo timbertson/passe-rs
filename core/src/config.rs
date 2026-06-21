@@ -153,9 +153,17 @@ impl Config {
 			let path = Self::user_path();
 			info!("Storing {}", &path.to_string_lossy());
 			fs::write(&Self::user_path(), serde_json::to_string_pretty(&self.data)?)?;
-			self.dirty = false;
+			self.update_after_save();
 		}
 		Ok(())
+	}
+
+	pub fn update_after_save(&mut self) {
+		self.dirty = false;
+	}
+
+	pub fn serialize(&self) -> Result<String> {
+		Ok(serde_json::to_string_pretty(&self.data)?)
 	}
 	
 	pub fn changes(&self) -> &Changes {
@@ -178,9 +186,14 @@ impl Config {
 		self.changes.get(domain)
 	}
 	
-	pub fn post_sync(&mut self, merged: Domains) {
+	pub fn update_after_sync(&mut self, merged: Domains) {
 		self.data.domains = merged;
 		self.data.changes = Default::default();
+	}
+
+	pub fn update_after_login(&mut self, auth: Authentication) {
+		self.data.authentication = Some(auth);
+		self.dirty = true;
 	}
 
 	pub fn for_domain(&self, domain: &str) -> Defaulted<&DomainConfig> {

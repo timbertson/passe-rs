@@ -1,4 +1,6 @@
 #!bash -eux
 gup --always
-cd .. && deno run --allow-all rollup -c --file="$1"
+cd ..
+deno run --allow-all rollup -c --file="$1"
+deno run --allow-all svelte-check
 gup --contents "$1"
