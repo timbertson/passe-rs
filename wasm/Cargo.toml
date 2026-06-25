@@ -30,3 +30,4 @@ serde = "*"
 serde_json = "*"
 anyhow = "*"
 web-sys = { version = "*", features = ['Headers', 'Request', 'RequestInit', 'RequestMode', 'Response', 'Window'] }
+wasm-logger = "0.2.0"

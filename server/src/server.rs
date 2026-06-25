@@ -11,7 +11,7 @@ use rocket::serde::json::Json;
 use rocket::fs::FileServer;
 
 use passe_core::auth::{LoginRequest, Authentication};
-use passe_core::config::{self, ConfigFile};
+use passe_core::config;
 
 use crate::error::HttpResult;
 use crate::request::*;
@@ -49,10 +49,9 @@ fn get_db(user: AuthenticatedUser, state: &State<DbMutex>) -> HttpResult<Json<co
 	Result::Ok(Json(state.lock().user_db(&user)?))
 }
 
-// TODO: we don't know if the user or server defaults are authoritative
 #[post("/db", data="<data>")]
-fn post_db(user: AuthenticatedUser, data: Json<ConfigFile>, state: &State<DbMutex>) -> HttpResult<Json<config::ConfigFile>> {
-	Result::Ok(Json(state.lock().sync_user_db(&user, data.0)?))
+fn post_db(user: AuthenticatedUser, data: Json<config::Changes>, state: &State<DbMutex>) -> HttpResult<Json<config::ConfigFile>> {
+	Result::Ok(Json(state.lock().sync_changes(&user, data.0)?))
 }
 
 #[launch]

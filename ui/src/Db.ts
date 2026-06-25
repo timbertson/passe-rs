@@ -1,9 +1,31 @@
 import { Config } from '../../wasm/public/package.js'
-import { User, UserState } from './Authentication.js';
+import { User, UserState } from './State.js';
 import { fetchReq, notNull } from './util.js';
-import { Authentication } from './Authentication.js';
+import { Authentication } from './State.js';
 
 const CACHE_KEY = 'user-db';
+
+export type DomainConfig = {
+	length: number,
+	suffix: string|undefined,
+	note: string|undefined,
+}
+
+export const DEFAULT_DOMAIN_CONFIG: DomainConfig = {
+	length: 10,
+	suffix: undefined,
+	note: undefined
+}
+
+export function domainConfigEq(a: DomainConfig, b: DomainConfig): boolean {
+	return (
+		a.length === b.length &&
+			(a.suffix || '') == (b.suffix || '') &&
+			(a.note || '') == (b.note || '')
+	)
+}
+
+type SyncState = 'stale' | 'in-sync'
 
 export class Db {
 	config: Config;
@@ -13,6 +35,9 @@ export class Db {
 		const cachedStr = window.localStorage.getItem(CACHE_KEY);
 		let config = null;
 		try {
+			if (cachedStr) {
+				console.log("Loaded cached state:", JSON.parse(cachedStr))
+			}
 			config = Config.new(cachedStr || undefined);
 		} catch(e) {
 			console.error("Error loading cached DB:", e);
@@ -28,11 +53,40 @@ export class Db {
 	
 	save() {
 		window.localStorage.setItem(CACHE_KEY, this.config.serialize());
-		this.config.update_after_save();
+		this.markDbUpdated();
+	}
+	
+	syncState(): SyncState {
+		this.recomputeOnDbUpdate();
+		return this.config.has_unsynced_changes() ? 'stale' : 'in-sync';
 	}
 	
 	generatePassword(domain: string, password: string): string {
 		return this.config.generate_password(domain, password)
+	}
+	
+	private markDbUpdated() {
+		console.log("marking DB as updated");
+		this.userState.invalidateDb += 1;
+	}
+
+	private recomputeOnDbUpdate() {
+		const _ = this.userState.invalidateDb;
+	}
+
+	lookup(domain: string): DomainConfig|null {
+		this.recomputeOnDbUpdate();
+		return this.config.lookup(domain);
+	}
+
+	defaultConfig(): DomainConfig {
+		this.recomputeOnDbUpdate();
+		return this.config.default_config();
+	}
+	
+	saveDomain(domain: string, config: DomainConfig) {
+		this.config.save_domain(domain, config);
+		this.save();
 	}
 	
 	tryAuthenticate = () => {
@@ -84,8 +138,7 @@ export class Db {
 			console.log("sync completed");
 			this.config.set_db(newDb);
 			this.save();
-			this.userState.invalidateDb += 1;
-			this.userState.syncState = 'in-sync';
+			this.markDbUpdated();
 		})();
 	}
 }

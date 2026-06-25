@@ -1,4 +1,4 @@
-import type { Authentication } from './Authentication.js';
+import type { Authentication } from './State.js';
 
 export function notNull<A>(obj: A|null|undefined): A {
 	if (obj == null) {

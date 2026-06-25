@@ -1,5 +1,12 @@
 #!bash -e
 gup --leave
-gup -u ../build-vars/target build-vars/inputs
-gup -u $(cat build-vars/inputs)
+gup -u ../build-vars/target
+
+for rust_dir in ./ ../core; do
+	(
+		cd "$rust_dir"
+		gup -u build-vars/inputs
+		gup -u $(cat build-vars/inputs)
+	)
+done
 exec cargo make "build_$(cat ../build-vars/target)"

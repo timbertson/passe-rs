@@ -21,7 +21,6 @@ const { db }: { db: Db } = $props();
 						{#await db.userState.syncTask}
 							:syncing...:
 						{:then}
-							:not-syncing:
 							<SyncWidget {db}/>
 						{:catch e}
 							:error -- {e}:

@@ -6,7 +6,7 @@ use passe_core::password;
 use passe_core::password::{Password, Domain};
 
 use web_sys::{Request, RequestInit};
-use passe_core::config::{self, ConfigFile};
+use passe_core::config::{self, ConfigFile, DomainConfig};
 
 const CONTENT_TYPE: &str = "content-type";
 const AUTHORIZATION: &str = "authorization";
@@ -29,7 +29,8 @@ pub struct Config(config::Config);
 impl Config {
 	#[wasm_bindgen]
 	pub fn new(serialized_state: Option<String>) -> JsResult<Config> {
-		println!("{:?}", &serialized_state);
+		wasm_logger::init(wasm_logger::Config::default());
+
 		let config = match serialized_state {
 			Some(s) => js(config::Config::deserialize(&s))?,
 			None => Default::default(),
@@ -38,11 +39,7 @@ impl Config {
 	}
 	
 	pub fn serialize(&self) -> JsResult<String> {
-		Ok(js(self.0.serialize())?)
-	}
-
-	pub fn update_after_save(&mut self) {
-		self.0.update_after_save()
+		js(self.0.serialize())
 	}
 	
 	pub fn generate_password(&self, domain: String, password: String) -> String {
@@ -84,10 +81,10 @@ impl Config {
 
 	pub fn sync_request(&self) -> JsResult<Request> {
 		let auth = js(self.0.authentication())?;
-		let data = &self.0.data;
+		let changes = &self.0.data.changes;
 		let opts = RequestInit::new();
 		opts.set_method("POST");
-		opts.set_body(&JsValue::from_str(&serde_json::to_string(&data).expect("Unserializable JSON")));
+		opts.set_body(&JsValue::from_str(&serde_json::to_string(&changes).expect("Unserializable JSON")));
 		let request = Request::new_with_str_and_init("/db", &opts)?;
 
 		request.headers().set(CONTENT_TYPE, JSON_TYPE)?;
@@ -100,6 +97,25 @@ impl Config {
 		db.authentication = self.0.data.authentication.clone();
 		self.0.data = db;
 		Ok(())
+	}
+	
+	pub fn lookup(&self, domain: &str) -> JsResult<JsValue> {
+		let opt: Option<&DomainConfig> = self.0.for_domain(domain).explicit();
+		Ok(serde_wasm_bindgen::to_value(&opt)?)
+	}
+
+	pub fn save_domain(&mut self, domain: String, domain_config_json: JsValue) -> JsResult<()> {
+		let domain_config = serde_wasm_bindgen::from_value(domain_config_json)?;
+		Ok(self.0.add(domain, domain_config))
+	}
+
+	pub fn default_config(&self) -> JsResult<JsValue> {
+		Ok(serde_wasm_bindgen::to_value(&self.0.defaults)?)
+	}
+
+	pub fn has_unsynced_changes(&self) -> bool {
+		log::info!("Unsynced changes? There are {}", self.0.changes().len());
+		self.0.changes().len() > 0
 	}
 }
 

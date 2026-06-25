@@ -6,7 +6,7 @@ use crate::storage::File;
 use base64::engine::general_purpose::STANDARD;
 use base64::engine::Engine;
 use passe_core::auth::*;
-use passe_core::config::{ConfigFile, Change};
+use passe_core::config::{self, Change, ConfigFile};
 use serde::{Serialize, Deserialize, de::DeserializeOwned};
 use rand::Rng;
 use rand::TryRng;
@@ -174,23 +174,17 @@ impl UserDB {
 		Self::load_file(self.persistence.as_ref(), File::UserDB(user.name()))
 	}
 
-	pub fn sync_user_db(&mut self, user: &AuthenticatedUser, client_db: ConfigFile) -> Result<ConfigFile> {
-		let ConfigFile { defaults, changes, .. } = client_db;
-		let ConfigFile { mut domains, .. } = self.user_db(user)?;
-		for (domain, change) in changes {
+	pub fn sync_changes(&mut self, user: &AuthenticatedUser, client_changes: config::Changes) -> Result<ConfigFile> {
+		let mut config = self.user_db(user)?;
+		for (domain, change) in client_changes {
 			match change {
-				Change::Delete => { domains.remove(&domain); },
-				Change::Set(v) => { domains.insert(domain, v); },
+				Change::Delete => { config.domains.remove(&domain); },
+				Change::Set(v) => { config.domains.insert(domain, v); },
 			}
 		}
-		let merged = ConfigFile {
-			authentication: None,
-			domains,
-			defaults,
-			changes: Default::default(),
-		};
-		Self::save_file(self.persistence.as_ref(), File::UserDB(user.name()), &merged)?;
-		Ok(merged)
+		config.changes = Default::default();
+		Self::save_file(self.persistence.as_ref(), File::UserDB(user.name()), &config)?;
+		Ok(config)
 	}
 
 	fn is_dirty(&self) -> bool {

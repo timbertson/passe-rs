@@ -2,7 +2,6 @@
 import { Db } from "./Db.js";
 import { EMPTY } from './util.js';
 
-let domain = $state(EMPTY);
 
 let password = $state(EMPTY);
 
@@ -10,16 +9,18 @@ let generatedPassword = $state(EMPTY);
 
 const { db }: { db: Db } = $props();
 
+let domain = () => db.userState.domain;
+
 function mask(password: String) {
 	return '*'.repeat(password.length);
 }
 
 function generate(ev: Event) {
 	ev.preventDefault();
-	if (domain == EMPTY || password == EMPTY) {
+	if (domain() == EMPTY || password == EMPTY) {
 		console.info('empty domain or password');
 	} else {
-		generatedPassword = db.generatePassword(domain, password);
+		generatedPassword = db.generatePassword(domain(), password);
 	}
 }
 
@@ -27,14 +28,12 @@ function keydown(ev: KeyboardEvent) {
 	if (ev.code == 'Escape') {
 		ev.preventDefault();
 		const id = (ev.target as Element).getAttribute('id');
-		if (id === 'domain-password') {
-			password = EMPTY;
-		} else if (id == 'domain') {
-			domain = EMPTY;
+		if (id === 'domain') {
+			db.userState.domain = EMPTY;
 		}
 
 		console.info('clearing password');
-		clearGenerated()
+		clearPassword()
 	}
 }
 
@@ -42,7 +41,7 @@ export function clearGenerated() {
 	generatedPassword = EMPTY;
 }
 
-function clearCurrent() {
+function clearPassword() {
 	generatedPassword = EMPTY;
 	password = EMPTY;
 }
@@ -54,7 +53,7 @@ function clearCurrent() {
 	<div class="mb-3">
 		<label for="domain" class="form-label">Domain</label>
 		<!-- svelte-ignore a11y_autofocus -->
-		<input type="text" class="form-control" id="domain" bind:value={domain} onkeydown={keydown} autofocus />
+		<input type="text" class="form-control" id="domain" bind:value={db.userState.domain} onkeydown={keydown} autofocus />
 	</div>
 	<div class="mb-3">
 		<label for="domain-password" class="form-label">Password</label>

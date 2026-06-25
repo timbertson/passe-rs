@@ -7,7 +7,11 @@ import typescript from '@rollup/plugin-typescript';
 const isRelease = (Deno.env.get('RELEASE') || 'false') == 'true';
 
 const plugins = [
-    svelte({}),
+    svelte({
+      compilerOptions: {
+        dev: !isRelease,
+      },
+    }),
     typescript(),
     resolve({
       browser: true,

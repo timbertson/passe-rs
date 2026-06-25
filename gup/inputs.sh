@@ -1,7 +1,7 @@
 #!bash -eu
 
 gup --always
-cd ..
+cd "$(dirname "$2")/.."
 ls -1 *.toml *.lock | sort > "$1"
 find src \
 	-name '*.rs' \

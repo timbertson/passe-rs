@@ -1,13 +1,13 @@
 <script lang="ts">
 import init from '../../wasm/public/package.js'
-import { EMPTY_USER_STATE } from './Authentication.js';
+import { EMPTY_USER_STATE } from './State.js';
 import { Db } from './Db';
+import DomainConfig from './DomainConfig.svelte';
 import PasswordForm from './PasswordForm.svelte';
 import UserPanel from './UserPanel.svelte';
 
 async function load(): Promise<Db> {
-	let wasm = await init({ module_or_path: '/wasm/public/package_bg.wasm' })
-	console.log("Loaded!: ", wasm);
+	await init({ module_or_path: '/wasm/public/package_bg.wasm' });
 	const userState = $state(EMPTY_USER_STATE);
 	const db = Db.loadCached(userState);
 	db.tryAuthenticate();
@@ -30,6 +30,7 @@ let initialize = $state(load().catch((e) => {
 	<UserPanel {db}/>
 	<div class="container">
 		<PasswordForm {db}/>
+		<DomainConfig {db}/>
 	</div>
 {:catch e}
 	<div class="container">

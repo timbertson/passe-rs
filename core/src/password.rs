@@ -61,7 +61,7 @@ impl Gen {
 		for b in self.buf.bytes() {
 			self.value.push(Self::substitute(b))
 		}
-		debug!(" -> {}", String::from_utf8(self.value.clone()).unwrap());
+		// debug!(" -> {}", String::from_utf8(self.value.clone()).unwrap());
 	}
 	
 	fn run(mut self) -> String {

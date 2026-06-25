@@ -5,7 +5,7 @@ use std::{fs, collections::BTreeMap, path::PathBuf, ops::Deref};
 
 use crate::auth::Authentication;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct DomainConfig {
 	pub length: usize,
 	pub suffix: Option<String>, // suffix for password
@@ -97,6 +97,13 @@ impl<T> AsRef<T> for Defaulted<T> {
 }
 
 impl<T> Defaulted<T> {
+	pub fn explicit(self) -> Option<T> {
+		match self {
+			Defaulted::Explicit(t) => Some(t),
+			Defaulted::Default(_) => None,
+		}
+	}
+
 	pub fn underlying(self) -> T {
 		match self {
 			Defaulted::Explicit(t) => t,
@@ -214,7 +221,16 @@ impl Config {
 	}
 
 	pub fn add(&mut self, domain: String, domain_config: DomainConfig) {
+		if let Some(existing) = self.for_domain(&domain).explicit() {
+			if existing == &domain_config {
+				info!("Skipping save for unchanged domain {}", &domain);
+				return;
+			}
+		}
+
+		info!("Updated domain {}", &domain);
 		self.data.changes.insert(domain, Change::Set(domain_config));
+		info!("Changes is now: {:?}", &self.data.changes);
 		self.dirty = true;
 	}
 }

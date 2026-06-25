@@ -1,3 +1,4 @@
+import { DEFAULT_DOMAIN_CONFIG, DomainConfig } from "./Db";
 import { EMPTY } from "./util"
 
 export type Authentication = {
@@ -7,24 +8,29 @@ export type Authentication = {
 
 export type User = string;
 
-type SyncState = null | 'stale' | 'in-sync'
-
 export type UserState = {
 	user: string,
 	password: string,
 	loginTask: null | Promise<User>,
 	authenticateTask: null | Promise<User>,
-	syncState: SyncState,
 	syncTask: Promise<void>
 	invalidateDb: number,
+	domain: string,
+	domainConfig: DomainConfig,
 }
 
 export const EMPTY_USER_STATE: UserState = {
+	// login
 	user: EMPTY,
 	password: EMPTY,
 	loginTask: null,
 	authenticateTask: null,
-	syncState: null,
+	
+	// DB
 	syncTask: Promise.resolve(),
 	invalidateDb: 0,
+
+	// domain config
+	domain: EMPTY,
+	domainConfig: { ... DEFAULT_DOMAIN_CONFIG },
 }
