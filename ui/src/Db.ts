@@ -79,6 +79,11 @@ export class Db {
 		return this.config.lookup(domain);
 	}
 
+	domainSuggestions(partial: string): Array<string> {
+		this.recomputeOnDbUpdate();
+		return this.config.domain_suggestions(partial);
+	}
+
 	defaultConfig(): DomainConfig {
 		this.recomputeOnDbUpdate();
 		return this.config.default_config();

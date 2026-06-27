@@ -2,8 +2,11 @@ use log::*;
 use anyhow::*;
 use serde::{Serialize, Deserialize};
 use std::{fs, collections::BTreeMap, path::PathBuf, ops::Deref};
+use std::cmp::Ordering;
+use std::collections::BTreeSet;
 
 use crate::auth::Authentication;
+use crate::domain_extractor::DomainExtractor;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct DomainConfig {
@@ -75,6 +78,30 @@ impl Default for ConfigFile {
 	}
 }
 
+#[derive(Debug, PartialEq, Eq)]
+struct LengthStr<'a> {
+	value: &'a str,
+	len: usize
+}
+
+impl<'a> LengthStr<'a> {
+	fn new(value: &'a str) -> Self {
+		LengthStr { value, len: value.len() }
+	}
+}
+
+impl<'a> Ord for LengthStr<'a> {
+	fn cmp(&self, other: &Self) -> Ordering {
+		self.len.cmp(&other.len)
+	}
+}
+
+impl<'a> PartialOrd for LengthStr<'a> {
+	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+		Some(self.cmp(other))
+	}
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Change<T> {
 	Delete,
@@ -115,11 +142,12 @@ impl<T> Defaulted<T> {
 pub struct Config {
 	pub data: ConfigFile,
 	pub dirty: bool,
+	extractor: DomainExtractor,
 }
 
 impl Default for Config {
 	fn default() -> Self {
-		Self { data: Default::default(), dirty: false }
+		Self { data: Default::default(), dirty: false, extractor: Default::default() }
 	}
 }
 
@@ -139,7 +167,7 @@ impl Config {
 	pub fn deserialize(s: &str) -> Result<Config> {
 		let data = serde_json::from_str::<ConfigFile>(s)
 			.context("Deserializing user config")?;
-		Ok(Self { data, dirty: false })
+		Ok(Self { data, dirty: false, extractor: Default::default() })
 	}
 
 	pub fn load_user() -> Result<Config> {
@@ -189,8 +217,28 @@ impl Config {
 		result
 	}
 	
-	pub fn domain_list(&self) -> impl Iterator<Item=&String> + '_ {
-		self.domains.keys().into_iter()
+	pub fn domain_list(&self) -> impl Iterator<Item=&str> + '_ {
+		let mut set = BTreeSet::from_iter(self.domains.keys());
+		set.extend(self.changes().keys());
+		set.into_iter().map(|s| s.as_ref())
+	}
+
+	pub fn domains_matching<'a, 'b>(&'a self, partial: &'b str, limit: usize) -> Vec<&'a str> {
+		let sorted = BTreeSet::from_iter(self.domain_list().map(LengthStr::new).into_iter());
+		sorted.into_iter()
+			.filter(|candidate| candidate.value.contains(partial))
+			.map(|length_str| length_str.value)
+			.take(limit)
+			.collect()
+	}
+	
+	pub fn extract_domain<'a, 'b>(&'a self, value: &'b str) -> Option<&'b str> {
+		let extracted = self.extractor.extract(value);
+		if extracted == value {
+			None
+		} else {
+			Some(extracted)
+		}
 	}
 
 	fn override_for(&self, domain: &str) -> Option<&Change<DomainConfig>> {

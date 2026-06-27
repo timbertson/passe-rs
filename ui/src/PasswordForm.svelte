@@ -46,6 +46,14 @@ function clearPassword() {
 	password = EMPTY;
 }
 
+let domainSuggestions = $derived.by(() => {
+	const domain = db.userState.domain;
+	if (domain.length < 2) {
+		return [];
+	}
+	return db.domainSuggestions(domain);
+});
+
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -58,6 +66,13 @@ function clearPassword() {
 	<div class="mb-3">
 		<label for="domain-password" class="form-label">Password</label>
 		<input type="password" class="form-control" id="domain-password" bind:value={password} onkeydown={keydown} oninput={clearGenerated} />
+		<div>
+			<ul>
+				{#each domainSuggestions as suggestion}
+					<li>{suggestion}</li>
+				{/each}
+			</ul>
+		</div>
 	</div>
 	<button type="submit" class="btn btn-primary">Submit</button>
 	<!-- <button type="button" class="btn btn-secondary" onclick={clearGenerated}>Clear</button> -->

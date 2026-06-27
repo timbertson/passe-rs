@@ -1216,6 +1216,7 @@ dependencies = [
  "base64",
  "log",
  "md5",
+ "regex",
  "serde",
  "serde_json",
  "shellexpand",

@@ -1,4 +1,6 @@
 src/auth.rs
 src/config.rs
+src/domain_extractor.rs
+src/domain_list.rs
 src/lib.rs
 src/password.rs

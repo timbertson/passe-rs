@@ -117,6 +117,15 @@ impl Config {
 		log::info!("Unsynced changes? There are {}", self.0.changes().len());
 		self.0.changes().len() > 0
 	}
+	
+	pub fn domain_suggestions(&self, partial: &str) -> JsResult<JsValue> {
+		let extracted = self.0.extract_domain(partial);
+		let mut v = self.0.domains_matching(partial, 5);
+		if let Some(extracted) = extracted {
+			v.insert(0, extracted);
+		}
+		Ok(serde_wasm_bindgen::to_value(&v)?)
+	}
 }
 
 pub fn authenticate_request(auth: &Authentication) -> JsResult<Request> {
