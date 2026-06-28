@@ -1,0 +1,94 @@
+ form {
+	position: relative;
+}
+
+.password-display {
+	z-index: 2;
+	display: inline-block;
+	position: absolute;
+	left: 20%;
+	margin-top: 0.5em;
+}
+
+.password-display .dummy {
+	position: relative;
+	display: inline-block;
+}
+
+.password-display .dummy, .password-display .password-value {
+	padding: 0.1em;
+}
+
+/* value is displayed on top to receive input events, but is invisible */
+.password-display .password-value {
+	position:absolute;
+	left:0;
+	top:0;
+	opacity: 0;
+}
+
+.selected {
+	background: #3b85ca;
+}
+
+.overlay {
+	z-index: 1;
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	/* background: #2929295e; */
+	background: #4d4d4d5e;
+}
+
+body {
+	/* background-color: #556; */
+	background-color: #4f4f5e;
+	background-image: url('/ui/public/footer.png');
+	background-size: 35%;
+	background-position: bottom;
+	background-repeat: no-repeat;
+}
+
+html, body {
+	min-height: 100%;
+}
+
+@media (max-width: 1000px) {
+	body {
+		background-size: 70%;
+	}
+}
+
+@media (min-width: 2000px) {
+	body {
+		background-size: 20%;
+	}
+}
+
+header {
+	/* background-color: #3b7fc4; */
+	background-color: #457a57;
+}
+
+.domain-config .card-body {
+	background-color: #39404a;
+}
+
+.domain-config .card-body input {
+	background-color: #404a57;
+}
+
+.domain-config .card-header.new {
+	background-color: #6b7483;
+}
+
+.domain-config .card-header.saved, .domain-config .card-header.dirty {
+	background-color: #526588;
+}
+
+.password-form input[type=text], .password-form input[type=password] {
+	background-color: #00000044;
+}
+

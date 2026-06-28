@@ -1,7 +1,6 @@
 <script lang="ts">
 import { Db } from "./Db.js";
-import { EMPTY } from './util.js';
-
+import { EMPTY, notNull } from './util.js';
 
 let password = $state(EMPTY);
 
@@ -11,8 +10,31 @@ const { db }: { db: Db } = $props();
 
 let domain = () => db.userState.domain;
 
+let showSuggestions = $state(false);
+
+let domainSuggestions = $derived.by(() => {
+	const domain = db.userState.domain;
+	if (domain.length < 2) {
+		return [];
+	}
+	return db.domainSuggestions(domain);
+});
+
+let selectedSuggestion: number|null = $derived.by(() => {
+	const _ = domainSuggestions;
+	return null
+});
+
 function mask(password: String) {
-	return '*'.repeat(password.length);
+	return '⬤'.repeat(password.length);
+}
+
+function generatedPasswordInput(): HTMLInputElement {
+	return notNull(document.querySelector('.password-display input.password'));
+}
+
+function generatedPasswordDummy(): HTMLInputElement {
+	return notNull(document.querySelector('.password-display .dummy'));
 }
 
 function generate(ev: Event) {
@@ -22,10 +44,13 @@ function generate(ev: Event) {
 	} else {
 		generatedPassword = db.generatePassword(domain(), password);
 	}
+	setTimeout(() => generatedPasswordInput().focus(),5)
 }
 
-function keydown(ev: KeyboardEvent) {
-	if (ev.code == 'Escape') {
+function baseKeydown(ev: KeyboardEvent) {
+	const code = ev.code;
+	console.log("KEY: ", code);
+	if (code == 'Escape') {
 		ev.preventDefault();
 		const id = (ev.target as Element).getAttribute('id');
 		if (id === 'domain') {
@@ -34,6 +59,34 @@ function keydown(ev: KeyboardEvent) {
 
 		console.info('clearing password');
 		clearPassword()
+	}
+}
+
+function domainKeydown(ev: KeyboardEvent) {
+	const code = ev.code;
+	if (code == 'ArrowDown') {
+		ev.preventDefault();
+		nextSelectedSuggestion(1);
+	} else if (code == 'ArrowUp') {
+		ev.preventDefault();
+		nextSelectedSuggestion(-1);
+	} else if (code == 'Tab') {
+		if (selectedSuggestion != null) {
+			db.userState.domain = domainSuggestions[selectedSuggestion];
+		}
+	}
+}
+
+function nextSelectedSuggestion(diff: number) {
+	if (selectedSuggestion == null) {
+		console.log("null; set to 0");
+		selectedSuggestion = 0;
+	} else {
+		console.log(`non-null; adding ${diff} to ${selectedSuggestion}`);
+		selectedSuggestion = Math.min(
+			domainSuggestions.length - 1,
+			Math.max(0, selectedSuggestion + diff)
+		);
 	}
 }
 
@@ -46,42 +99,102 @@ function clearPassword() {
 	password = EMPTY;
 }
 
-let domainSuggestions = $derived.by(() => {
-	const domain = db.userState.domain;
-	if (domain.length < 2) {
-		return [];
+function setDomain(value: string) {
+	return function(ev: Event) {
+		ev.preventDefault();
+		db.userState.domain = value;
 	}
-	return db.domainSuggestions(domain);
-});
+}
 
+function setSelectedSuggestion(idx: number | null) {
+	return function(ev: Event) {
+		ev.preventDefault();
+		selectedSuggestion = idx;
+	}
+}
+
+function suggestionClass(idx: number) {
+	return idx === selectedSuggestion ? 'active' : '';
+}
+
+function setShowSuggestions(value: boolean) {
+	return function(ev: Event) {
+		ev.preventDefault();
+		selectedSuggestion = null;
+		showSuggestions = value;
+	}
+}
+
+function generatedFocus(ev: Event) {
+	// ev.preventDefault();
+	generatedPasswordInput().select();
+	generatedPasswordDummy().classList.add('selected');
+}
+
+function generatedBlur(ev: Event) {
+	// ev.preventDefault();
+	generatedPasswordDummy().classList.remove('selected');
+}
+
+function stopPropagation(ev: Event) {
+	ev.stopPropagation();
+}
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<form onsubmit={generate} onkeydown={keydown}>
+<form onsubmit={generate} onkeydown={baseKeydown} class="password-form">
 	<div class="mb-3">
 		<label for="domain" class="form-label">Domain</label>
 		<!-- svelte-ignore a11y_autofocus -->
-		<input type="text" class="form-control" id="domain" bind:value={db.userState.domain} onkeydown={keydown} autofocus />
-	</div>
-	<div class="mb-3">
-		<label for="domain-password" class="form-label">Password</label>
-		<input type="password" class="form-control" id="domain-password" bind:value={password} onkeydown={keydown} oninput={clearGenerated} />
-		<div>
-			<ul>
-				{#each domainSuggestions as suggestion}
-					<li>{suggestion}</li>
+		<input type="text"
+			class="form-control"
+			id="domain"
+			bind:value={db.userState.domain}
+			onkeydown={domainKeydown}
+			onfocus={setShowSuggestions(true)}
+			onblur={setShowSuggestions(false)}
+			autofocus
+		/>
+
+		{#if showSuggestions && domainSuggestions.length > 0}
+			<ul class="dropdown-menu show" onmouseleave={setSelectedSuggestion(null)}>
+				{#each domainSuggestions as suggestion, i}
+					<li><a
+						class="dropdown-item {suggestionClass(i)}"
+						href="#null"
+						tabindex="-1"
+						onmousedown={setDomain(suggestion)}
+						onmouseenter={setSelectedSuggestion(i)}
+					>{suggestion}</a></li>
 				{/each}
 			</ul>
-		</div>
-	</div>
-	<button type="submit" class="btn btn-primary">Submit</button>
-	<!-- <button type="button" class="btn btn-secondary" onclick={clearGenerated}>Clear</button> -->
+		{/if}
 
-	{#if generatedPassword !== EMPTY}
-	<div class="alert alert-light" role="alert">
-		Generated password: {mask(generatedPassword)}
-		<br>
-		{generatedPassword}
 	</div>
-	{/if}
+
+
+	<div class="mb-3">
+		<label for="domain-password" class="form-label">Password</label>
+
+		<div class="input-group">
+			<input type="password" class="form-control" id="domain-password" bind:value={password} onkeydown={baseKeydown} oninput={clearGenerated} />
+			<button type="submit" class="btn btn-secondary">Submit</button>
+		</div>
+
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		{#if generatedPassword !== EMPTY}
+			<div class="overlay" onclick={clearPassword}></div>
+			<div class="popover show password-display" role="alert" data-popper-placement="right" onclick={stopPropagation}>
+				<div class="popover-body">
+					<!-- Generated password: -->
+					<div class="password dummy">{mask(generatedPassword)}
+						<input type="text" name="generated-password" class="password password-value" onfocus={generatedFocus} onblur={generatedBlur} value="{generatedPassword}"/>
+					</div>
+				</div>
+			</div>
+		{/if}
+	</div>
+
+	<!-- <button type="button" class="btn btn-secondary" onclick={clearGenerated}>Clear</button> -->
 </form>

@@ -226,7 +226,7 @@ impl Config {
 	pub fn domains_matching<'a, 'b>(&'a self, partial: &'b str, limit: usize) -> Vec<&'a str> {
 		let sorted = BTreeSet::from_iter(self.domain_list().map(LengthStr::new).into_iter());
 		sorted.into_iter()
-			.filter(|candidate| candidate.value.contains(partial))
+			.filter(|candidate| candidate.value.contains(partial) && !(candidate.value == partial))
 			.map(|length_str| length_str.value)
 			.take(limit)
 			.collect()

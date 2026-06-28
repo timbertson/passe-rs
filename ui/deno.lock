@@ -4,6 +4,7 @@
     "npm:@rollup/plugin-node-resolve@16": "16.0.3_rollup@4.62.0",
     "npm:@rollup/plugin-terser@1": "1.0.0_rollup@4.62.0",
     "npm:@rollup/plugin-typescript@^12.3.0": "12.3.0_rollup@4.62.0_tslib@2.8.1_typescript@6.0.3",
+    "npm:rollup-plugin-import-css@^4.2.1": "4.2.1_rollup@4.62.0",
     "npm:rollup-plugin-svelte@^7.2.3": "7.2.3_rollup@4.62.0_svelte@5.56.3",
     "npm:rollup@^4.62.0": "4.62.0",
     "npm:svelte-check@^4.6.0": "4.6.0_svelte@5.56.3_typescript@6.0.3",
@@ -365,6 +366,13 @@
       ],
       "bin": true
     },
+    "rollup-plugin-import-css@4.2.1_rollup@4.62.0": {
+      "integrity": "sha512-X0TbADEYeCWx0ULS3d9I2vRHT9smhSDkCol8bTCDyI0pAJAZStK0EGo9c4i9hUbOoPeTgWE+hcUjm0V/GoseUQ==",
+      "dependencies": [
+        "@rollup/pluginutils@5.4.0_rollup@4.62.0",
+        "rollup"
+      ]
+    },
     "rollup-plugin-svelte@7.2.3_rollup@4.62.0_svelte@5.56.3": {
       "integrity": "sha512-LlniP+h00DfM+E4eav/Kk8uGjgPUjGIBfrAS/IxQvsuFdqSM0Y2sXf31AdxuIGSW9GsmocDqOfaxR5QNno/Tgw==",
       "dependencies": [
@@ -495,6 +503,7 @@
       "npm:@rollup/plugin-node-resolve@16",
       "npm:@rollup/plugin-terser@1",
       "npm:@rollup/plugin-typescript@^12.3.0",
+      "npm:rollup-plugin-import-css@^4.2.1",
       "npm:rollup-plugin-svelte@^7.2.3",
       "npm:rollup@^4.62.0",
       "npm:svelte-check@^4.6.0",

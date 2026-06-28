@@ -96,15 +96,21 @@ use super::*;
 
 	#[test]
 	fn test_dot_iterator() {
+		// basic usage
+		assert_eq!("com", empty("my.com").expanded().result);
+		assert_eq!("my.com", empty("my.com").expanded().expanded().result);
+		assert_eq!("my.com", empty("my.com").expanded().expanded().expanded().result);
+		assert_eq!(".my.com", empty(".my.com").expanded().expanded().expanded().result);
+
+		// dot edge cases
 		assert_eq!("", empty("foo").result);
 		assert_eq!("foo", empty("foo").expanded().result);
 		assert_eq!("", empty("foo.").expanded().result);
 		assert_eq!("foo.", empty("foo.").expanded().expanded().result);
 		assert_eq!(".", empty(".....").expanded().expanded().result);
 
-		assert_eq!("com", empty("my.com").expanded().result);
-		assert_eq!("my.com", empty("my.com").expanded().expanded().result);
-		assert_eq!("my.com", empty("my.com").expanded().expanded().expanded().result);
-		assert_eq!(".my.com", empty(".my.com").expanded().expanded().expanded().result);
+		// non-ASCII
+		assert_eq!("🔥", empty("✨.🔥").expanded().result);
+		assert_eq!("✨.🔥", empty("✨.🔥").expanded().expanded().result);
 	}
 }

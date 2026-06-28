@@ -6,7 +6,7 @@ import UserForm from './UserForm.svelte';
 const { db }: { db: Db } = $props();
 </script>
 
-<header class="shadow-lg border-bottom mb-4 py-3 d-flex bg-light-subtle">
+<header class="shadow-lg border-bottom mb-4 py-3 d-flex">
 	<div class="container">
 		{#if db.userState.loginTask != null}
 			{#await db.userState.loginTask}
@@ -14,12 +14,14 @@ const { db }: { db: Db } = $props();
 			{:then user}
 				<div class="row">
 					<div class="col">
-						<span class="fs-4">passe</span>
+						<span class="fs-4"><strong>passe</strong></span>
 					</div>
-					<div class="col">
-						<span>Logged in: {user}</span>
+					<div class="col text-center fs-4">
+						<span>{user}</span>
+					</div>
+					<div class="col text-end">
 						{#await db.userState.syncTask}
-							:syncing...:
+							...
 						{:then}
 							<SyncWidget {db}/>
 						{:catch e}
@@ -37,7 +39,7 @@ const { db }: { db: Db } = $props();
 					{:else}
 						{e}
 					{/if}
-					<button type="button" class="btn-close float-end" onclick={db.clearLoginTask} aria-label="Close"></button>
+					<button tabindex="-1" type="button" class="btn-close float-end" onclick={db.clearLoginTask} aria-label="Close"></button>
 				</div>
 			{/await}
 		{:else} <!-- loginTask == null -->

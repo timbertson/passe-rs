@@ -35,29 +35,54 @@ function submit(ev: Event) {
 	db.saveDomain(db.userState.domain, db.userState.domainConfig);
 }
 
-const buttonClass = () => canSave() ? "btn-primary" : "disabled btn-secondary";
+const buttonClass = () => canSave() ? "btn-secondary" : "disabled btn-secondary";
+
+const headerClass = () => {
+	if (persistedOnly == null) {
+		return 'new';
+	} else {
+		return dirty ? 'dirty' : 'saved';
+	}
+}
 
 </script>
 
-<div class="card mt-5">
+<div class="card domain-config">
 	<form onsubmit={submit}>
-		<div class="card-header">
-			{#if persistedOnly == null}
-				:new: {db.userState.domain}
-			{:else}
-				<strong>{db.userState.domain}</strong>{#if dirty}*{/if}
-			{/if}
-			<button type="submit" class="btn {buttonClass()}" onclick={submit}>Save</button>
+		<div class="card-header {headerClass()}">
+			<div class="row">
+				<div class="col fs-4">
+					{#if persistedOnly == null}
+						{db.userState.domain}
+					{:else}
+						<strong>{db.userState.domain}</strong>{#if dirty}*{/if}
+					{/if}
+				</div>
+				<div class="col text-end">
+					<button type="submit" class="btn {buttonClass()}" onclick={submit}>Save</button>
+				</div>
+			</div>
 		</div>
+
 		<div class="card-body">
-			<label for="domain-note">Note:</label>
-			<input type="text" class="form-control" id="domain-note" bind:value={db.userState.domainConfig.note} />
-
-			<label for="domain-length">Length:</label>
-			<input type="number" class="form-control" id="domain-length" bind:value={db.userState.domainConfig.length} />
-
-			<label for="domain-suffix">Suffix:</label>
-			<input type="text" class="form-control" id="domain-suffix" bind:value={db.userState.domainConfig.suffix} />
+			<div class="row">
+				<div class="col">
+					<label for="domain-note">Note:</label>
+					<input type="text" class="form-control" id="domain-note" bind:value={db.userState.domainConfig.note} />
+				</div>
+			</div>
+			<div class="row mt-3">
+				<div class="col">
+					<label for="domain-length">Length:</label>
+					<input type="number" class="form-control" id="domain-length" bind:value={db.userState.domainConfig.length} />
+				</div>
+			</div>
+			<div class="row mt-3">
+				<div class="col">
+					<label for="domain-suffix">Suffix:</label>
+					<input type="text" class="form-control" id="domain-suffix" bind:value={db.userState.domainConfig.suffix} />
+				</div>
+			</div>
 		</div>
 	</form>
 </div>

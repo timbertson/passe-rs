@@ -4,7 +4,9 @@ let { db } : { db: Db } = $props();
 let syncState = $derived(db.syncState());
 </script>
 
-<button class='btn btn-info' onclick={db.sync}>sync</button>
 {#if syncState === 'stale'}
-	:stale:
+	<span class="fs-5 lh-1" style="position:relative; top:0.2em;">
+		&#8634;
+	</span>
 {/if}
+<button tabindex="-1" class='btn btn-light ms-3' onclick={db.sync}>sync</button>

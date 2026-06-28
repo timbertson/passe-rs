@@ -29,8 +29,14 @@ let initialize = $state(load().catch((e) => {
 {:then db}
 	<UserPanel {db}/>
 	<div class="container">
-		<PasswordForm {db}/>
-		<DomainConfig {db}/>
+		<div class="row">
+			<div class="col-xl gy-2">
+				<PasswordForm {db}/>
+			</div>
+			<div class="col-xl-5 gy-4">
+				<DomainConfig {db}/>
+			</div>
+		</div>
 	</div>
 {:catch e}
 	<div class="container">
