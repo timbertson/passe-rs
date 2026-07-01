@@ -3,6 +3,9 @@ name = "passe-core"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+path = "src/lib.rs"
+
 [dependencies]
 base64 = "0.22.1"
 anyhow = "1"

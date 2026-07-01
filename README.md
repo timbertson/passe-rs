@@ -15,4 +15,4 @@ Building:
  - `gup server/all` for everything
  - `gup ui/all` for just client-side resources (wasm & TS)
  - `gup wasm/all` for just WASM changes
- - `gup ui/public/bundle.js` for just TS changes
+ - `gup ui/public/bundle` for just TS changes

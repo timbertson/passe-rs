@@ -15,9 +15,9 @@ $effect(() => {
 let dirty = $derived.by(() => {
 	return !domainConfigEq(persisted(), db.userState.domainConfig);
 })
-$inspect('domain:', db.userState.domain)
-$inspect('persisted:', persistedOnly)
-$inspect('domainConfig (form)', db.userState.domainConfig);
+// $inspect('domain:', db.userState.domain)
+// $inspect('persisted:', persistedOnly)
+// $inspect('domainConfig (form)', db.userState.domainConfig);
 
 let canSave = () => {
 	const domain = db.userState.domain;

@@ -3,6 +3,29 @@
   <head>
     <link href="./bootstrap.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" />
     <link href="./style.css" rel="stylesheet" />
+    <script>
+      const registerServiceWorker = async () => {
+        if ("serviceWorker" in navigator) {
+          try {
+            const registration = await navigator.serviceWorker.register("/serviceWorker.js", { scope: '/' });
+            // registration.update();
+            if (registration.installing) {
+              console.log("Service worker registration: installing");
+            } else if (registration.waiting) {
+              console.log("Service worker registration: installed");
+            } else if (registration.active) {
+              console.log("Service worker registration: active");
+              const active = registration.active;
+              window.activeServiceWorker = active;
+              active.postMessage('loaded');
+            }
+          } catch (error) {
+            console.error(`Service worker registration failed with ${error}`);
+          }
+        }
+      };
+      registerServiceWorker();
+    </script>
   </head>
   <body data-bs-theme="dark">
     <div id="app">
@@ -10,6 +33,6 @@
         <h3>Loading UI...</h3>
       </div>
     </div>
-    <script type="module" src="/ui/public/bundle.js"></script>
+    <script type="module" src="/ui/public/bundle/main.js"></script>
   </body>
 </html>

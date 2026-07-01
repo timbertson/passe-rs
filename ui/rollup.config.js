@@ -24,22 +24,31 @@ if (isRelease) {
   plugins.push(terser());
 }
 
-export default {
-  onwarn(warning, dfl) {
-    if (warning.code == 'CIRCULAR_DEPENDENCY') {
-      // ignore completely
-      // dfl(warning)
-    } else {
-      throw new Error(`[${warning.code}]: ${warning.message}`);
-    }
-  },
-  input: 'src/main.ts',
-  output: [
-    {
+export default [
+  {
+    onwarn(warning, dfl) {
+      if (warning.code == 'CIRCULAR_DEPENDENCY') {
+        // ignore completely
+        // dfl(warning)
+      } else {
+        throw new Error(`[${warning.code}]: ${warning.message}`);
+      }
+    },
+    input: 'src/main.ts',
+    output: {
       externalLiveBindings: false,
       interop: "esModule",
       format: 'es',
     },
-  ],
-  plugins
-}
+    plugins
+  },
+  {
+    input: 'src/serviceWorker.ts',
+    output: {
+      externalLiveBindings: false,
+      interop: "esModule",
+      format: 'es',
+    },
+    plugins
+  },
+]

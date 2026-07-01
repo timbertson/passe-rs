@@ -114,7 +114,6 @@ impl Config {
 	}
 
 	pub fn has_unsynced_changes(&self) -> bool {
-		log::info!("Unsynced changes? There are {}", self.0.changes().len());
 		self.0.changes().len() > 0
 	}
 	

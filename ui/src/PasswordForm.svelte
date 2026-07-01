@@ -29,12 +29,12 @@ function mask(password: String) {
 	return '⬤'.repeat(password.length);
 }
 
-function generatedPasswordInput(): HTMLInputElement {
-	return notNull(document.querySelector('.password-display input.password'));
+function generatedPasswordInput(): null|HTMLInputElement {
+	return document.querySelector('.password-display input.password');
 }
 
-function generatedPasswordDummy(): HTMLInputElement {
-	return notNull(document.querySelector('.password-display .dummy'));
+function generatedPasswordDummy(): null|HTMLInputElement {
+	return document.querySelector('.password-display .dummy');
 }
 
 function generate(ev: Event) {
@@ -44,7 +44,7 @@ function generate(ev: Event) {
 	} else {
 		generatedPassword = db.generatePassword(domain(), password);
 	}
-	setTimeout(() => generatedPasswordInput().focus(),5)
+	setTimeout(() => generatedPasswordInput()?.focus(),5)
 }
 
 function baseKeydown(ev: KeyboardEvent) {
@@ -64,6 +64,12 @@ function baseKeydown(ev: KeyboardEvent) {
 
 function domainKeydown(ev: KeyboardEvent) {
 	const code = ev.code;
+	function acceptActiveSuggestion() {
+		if (selectedSuggestion != null) {
+			db.userState.domain = domainSuggestions[selectedSuggestion];
+		}
+	}
+
 	if (code == 'ArrowDown') {
 		ev.preventDefault();
 		nextSelectedSuggestion(1);
@@ -71,8 +77,12 @@ function domainKeydown(ev: KeyboardEvent) {
 		ev.preventDefault();
 		nextSelectedSuggestion(-1);
 	} else if (code == 'Tab') {
-		if (selectedSuggestion != null) {
-			db.userState.domain = domainSuggestions[selectedSuggestion];
+		acceptActiveSuggestion();
+	} else if (code == 'Enter') {
+		if (db.userState.password == '') {
+			ev.preventDefault(); // don't submit; tab instead
+			acceptActiveSuggestion();
+			notNull(document.getElementById('domain-password')).focus();
 		}
 	}
 }
@@ -126,14 +136,12 @@ function setShowSuggestions(value: boolean) {
 }
 
 function generatedFocus(ev: Event) {
-	// ev.preventDefault();
-	generatedPasswordInput().select();
-	generatedPasswordDummy().classList.add('selected');
+	generatedPasswordInput()?.select();
+	generatedPasswordDummy()?.classList?.add('selected');
 }
 
 function generatedBlur(ev: Event) {
-	// ev.preventDefault();
-	generatedPasswordDummy().classList.remove('selected');
+	generatedPasswordDummy()?.classList.remove('selected');
 }
 
 function stopPropagation(ev: Event) {

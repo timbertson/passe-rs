@@ -8,7 +8,7 @@ mod request;
 use rocket::State;
 use rocket::response;
 use rocket::serde::json::Json;
-use rocket::fs::FileServer;
+use rocket::fs::{self, FileServer};
 
 use passe_core::auth::{LoginRequest, Authentication};
 use passe_core::config;
@@ -72,6 +72,20 @@ fn rocket() -> _ {
 			post_db
 		])
 		// these mirror the on-disk layout for consistency, but don't expose anything outside the public folders
-		.mount("/ui/public", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/public")))
+		.mount("/ui/public", FileServer::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/public"),
+			fs::Options::None
+		))
 		.mount("/wasm/public", FileServer::from(concat!(env!("CARGO_MANIFEST_DIR"), "/../wasm/public")))
+
+		// also mount two special files at the root:
+		// - serviceWorker.js, since it's limited to the path where it was loaded from
+		// - index.html on /
+		.mount("/serviceWorker.js", FileServer::new(
+			concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/public/bundle/serviceWorker.js"),
+			fs::Options::IndexFile
+		).rank(1))
+		.mount("/", FileServer::new(
+			concat!(env!("CARGO_MANIFEST_DIR"), "/../ui/public/index.html"),
+			fs::Options::IndexFile
+		).rank(2))
 }
