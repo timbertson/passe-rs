@@ -4,6 +4,7 @@ import { EMPTY, notNull } from './util.js';
 
 let password = $state(EMPTY);
 
+let maskPassword = $state(true);
 let generatedPassword = $state(EMPTY);
 
 const { db }: { db: Db } = $props();
@@ -26,7 +27,11 @@ let selectedSuggestion: number|null = $derived.by(() => {
 });
 
 function mask(password: String) {
-	return '⬤'.repeat(password.length);
+	if (maskPassword) {
+		return '●'.repeat(password.length);
+	} else {
+		return password;
+	}
 }
 
 function generatedPasswordInput(): null|HTMLInputElement {
@@ -37,19 +42,38 @@ function generatedPasswordDummy(): null|HTMLInputElement {
 	return document.querySelector('.password-display .dummy');
 }
 
-function generate(ev: Event) {
+async function copyToClipboard(data: string): Promise<boolean> {
+	try {
+		const clipboard = navigator.clipboard;
+		if (!clipboard) {
+			db.setToast('Clipboard API unavailable');
+			return false;
+		}
+		await clipboard.writeText(data);
+		db.setToast('Copied to clipboard!');
+		console.info("Copied to clipboard");
+		return true;
+	} catch(e) {
+		db.setToast(`Can't copy to clipboard: ${e}`);
+		console.error("Error copying clipboard:", e);
+		return false
+	}
+}
+
+async function generate(ev: Event) {
 	ev.preventDefault();
 	if (domain() == EMPTY || password == EMPTY) {
 		console.info('empty domain or password');
 	} else {
 		generatedPassword = db.generatePassword(domain(), password);
+		await copyToClipboard(generatedPassword);
+		setTimeout(() => generatedPasswordInput()?.focus(),5);
 	}
-	setTimeout(() => generatedPasswordInput()?.focus(),5)
 }
 
 function baseKeydown(ev: KeyboardEvent) {
 	const code = ev.code;
-	console.log("KEY: ", code);
+	// console.log("KEY: ", code);
 	if (code == 'Escape') {
 		ev.preventDefault();
 		const id = (ev.target as Element).getAttribute('id');
@@ -102,6 +126,7 @@ function nextSelectedSuggestion(diff: number) {
 
 export function clearGenerated() {
 	generatedPassword = EMPTY;
+	maskPassword = true;
 }
 
 function clearPassword() {
@@ -142,6 +167,11 @@ function generatedFocus(ev: Event) {
 
 function generatedBlur(ev: Event) {
 	generatedPasswordDummy()?.classList.remove('selected');
+}
+
+function toggleMask(ev: Event) {
+	ev.preventDefault();
+	maskPassword = !maskPassword;
 }
 
 function stopPropagation(ev: Event) {
@@ -193,11 +223,18 @@ function stopPropagation(ev: Event) {
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		{#if generatedPassword !== EMPTY}
 			<div class="overlay" onclick={clearPassword}></div>
-			<div class="popover show password-display" role="alert" data-popper-placement="right" onclick={stopPropagation}>
+			<div class="popover show password-display" role="alert" data-popper-placement="right">
 				<div class="popover-body">
-					<!-- Generated password: -->
-					<div class="password dummy">{mask(generatedPassword)}
-						<input type="text" name="generated-password" class="password password-value" onfocus={generatedFocus} onblur={generatedBlur} value="{generatedPassword}"/>
+					<div class="row">
+						<div class="col">
+							<!-- Generated password: -->
+							<div class="password dummy">{mask(generatedPassword)}
+								<input type="text" name="generated-password" class="password password-value" onfocus={generatedFocus} onblur={generatedBlur} value="{generatedPassword}"/>
+							</div>
+						</div>
+						<div class="col text-end">
+							<button class="btn btn-primary" onclick={toggleMask}>show</button>
+						</div>
 					</div>
 				</div>
 			</div>

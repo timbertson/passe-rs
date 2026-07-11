@@ -17,6 +17,7 @@ export type UserState = {
 	invalidateDb: number,
 	domain: string,
 	domainConfig: DomainConfig,
+	toastMessage: string|null,
 }
 
 export const EMPTY_USER_STATE: UserState = {
@@ -33,4 +34,7 @@ export const EMPTY_USER_STATE: UserState = {
 	// domain config
 	domain: EMPTY,
 	domainConfig: { ... DEFAULT_DOMAIN_CONFIG },
+	
+	// UI
+	toastMessage: null,
 }

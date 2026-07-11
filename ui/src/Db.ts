@@ -125,6 +125,12 @@ export class Db {
 		})();
 	}
 	
+	clearAuthentication = () => {
+		this.config.clear_authentication();
+		this.userState.authenticateTask = null;
+		this.save();
+	}
+	
 	clearLoginTask = () => {
 		this.userState.loginTask = null;
 	}
@@ -145,5 +151,13 @@ export class Db {
 			this.save();
 			this.markDbUpdated();
 		})();
+	}
+	
+	setToast(message: string | null) {
+		console.log("Setting toast to: ", message);
+		this.userState.toastMessage = message;
+		if (message != null) {
+			setTimeout(() => this.setToast(null), 3000);
+		}
 	}
 }

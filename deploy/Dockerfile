@@ -1,6 +1,7 @@
-ARG TARGET="aarch64-unknown-linux-musl"
+ARG TARGET="x86_64-unknown-linux-musl"
+ARG BUILD_PLATFORM="linux/amd64"
 
-FROM --platform=linux/aarch64 rust:1.94-slim-bookworm AS builder
+FROM --platform=${BUILD_PLATFORM} rust:1.94-slim-bookworm AS builder
 ARG TARGET
 WORKDIR /app
 RUN apt-get update && apt-get install -y musl-tools && rm -rf /var/lib/apt/lists/*
@@ -27,16 +28,18 @@ RUN CARGO_INCREMENTAL=0 \
 
 # -------------------------------------
 
-FROM --platform=linux/aarch64 scratch
+FROM --platform=${BUILD_PLATFORM} scratch
 ARG TARGET
 
 # cheeky mkdir
 WORKDIR /app/server
 WORKDIR /app
+VOLUME /var/passe
 ENV CARGO_MANIFEST_DIR=/app/server
+ENV PASSE_SERVER_ROOT=/var/passe
 COPY --from=builder /app/target/${TARGET}/release/passe-server .
 COPY wasm/public wasm/public
 COPY ui/public ui/public
 
-EXPOSE 8000
+EXPOSE 8080
 CMD ["./passe-server"]

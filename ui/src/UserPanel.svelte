@@ -4,22 +4,36 @@ import SyncWidget from './SyncWidget.svelte';
 import UserForm from './UserForm.svelte';
 
 const { db }: { db: Db } = $props();
+function clearAuthentication(ev: Event) {
+	ev.preventDefault();
+	db.clearAuthentication();
+}
 </script>
 
 <header class="shadow-lg border-bottom mb-4 py-3 d-flex">
 	<div class="container">
 		{#if db.userState.loginTask != null}
 			{#await db.userState.loginTask}
-				(spin spin...)
-			{:then user}
 				<div class="row">
 					<div class="col">
 						<span class="fs-4"><strong>passe</strong></span>
 					</div>
 					<div class="col text-center fs-4">
-						<span>{user}</span>
+						<span>...</span>
 					</div>
 					<div class="col text-end">
+					</div>
+				</div>
+			{:then user}
+				<div class="row">
+					<div class="col-md">
+						<span class="fs-4"><strong>passe</strong></span>
+					</div>
+					<div class="col-md text-center fs-4">
+						<span>{user}</span>
+						<button class="btn btn-outline-secondary" onclick={clearAuthentication}>x</button>
+					</div>
+					<div class="col-md text-end">
 						{#await db.userState.syncTask}
 							...
 						{:then}

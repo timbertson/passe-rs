@@ -5,6 +5,7 @@ mod db;
 mod storage;
 mod request;
 
+use std::net::{IpAddr, Ipv4Addr};
 use rocket::State;
 use rocket::response;
 use rocket::serde::json::Json;
@@ -59,6 +60,8 @@ fn rocket() -> _ {
 	env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 	let config = rocket::Config {
 		log_level: rocket::log::LogLevel::Normal,
+		address: IpAddr::from(Ipv4Addr::new(0, 0, 0, 0)),
+		port: 8080,
 		..rocket::Config::release_default()
 	};
 	rocket::custom(config)

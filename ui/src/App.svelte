@@ -10,7 +10,8 @@ async function load(): Promise<Db> {
 	await init({ module_or_path: '/wasm/public/package_bg.wasm' });
 	const userState = $state(EMPTY_USER_STATE);
 	const db = Db.loadCached(userState);
-	db.tryAuthenticate();
+	db.tryAuthenticate(); // kick off but don't wait
+	(window as any).passeDb = db;
 	return db;
 }
 
@@ -28,7 +29,7 @@ let initialize = $state(load().catch((e) => {
 	</div>
 {:then db}
 	<UserPanel {db}/>
-	<div class="container">
+	<div class="container mb-5">
 		<div class="row">
 			<div class="col-xl gy-2">
 				<PasswordForm {db}/>
@@ -37,6 +38,9 @@ let initialize = $state(load().catch((e) => {
 				<DomainConfig {db}/>
 			</div>
 		</div>
+		{#if db.userState.toastMessage != null}
+			<div class="toast show p-3 text-bg-primary border-0">{db.userState.toastMessage}</div>
+		{/if}
 	</div>
 {:catch e}
 	<div class="container">

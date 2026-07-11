@@ -11,5 +11,6 @@ mkShell {
 		libiconv curl # native libs
 		deno
 		llvmPackages.lld
+		docker-credential-gcr # deployment
 	];
 }

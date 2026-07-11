@@ -197,6 +197,10 @@ impl Config {
 		self.data.authentication.as_ref().ok_or_else(||anyhow!("Authorization missing"))
 	}
 
+	pub fn clear_authentication(&mut self) {
+		self.data.authentication = None;
+	}
+
 	pub fn update_after_save(&mut self) {
 		self.dirty = false;
 	}

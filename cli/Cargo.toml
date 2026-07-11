@@ -5,7 +5,7 @@ edition = "2021"
 
 [[bin]]
 name = "passe"
-path = "src/main.rs"
+path = "src/cli.rs"
 
 [dependencies]
 passe-core = { path = "../core" }

@@ -117,6 +117,10 @@ impl Config {
 		self.0.changes().len() > 0
 	}
 	
+	pub fn clear_authentication(&mut self) {
+		self.0.clear_authentication();
+	}
+	
 	pub fn domain_suggestions(&self, partial: &str) -> JsResult<JsValue> {
 		let extracted = self.0.extract_domain(partial);
 		let mut v = self.0.domains_matching(partial, 5);

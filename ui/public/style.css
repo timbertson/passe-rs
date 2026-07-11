@@ -6,8 +6,8 @@
 	z-index: 2;
 	display: inline-block;
 	position: absolute;
-	left: 20%;
-	margin-top: 0.5em;
+	max-width: 100%;
+	width: 100%;
 }
 
 .password-display .dummy {
@@ -17,6 +17,9 @@
 
 .password-display .dummy, .password-display .password-value {
 	padding: 0.1em;
+	letter-spacing: 0.1em;
+	font-size: 1.2em;
+	font-family: monospace;
 }
 
 /* value is displayed on top to receive input events, but is invisible */
@@ -72,6 +75,10 @@ header {
 	background-color: #457a57;
 }
 
+header .btn-link {
+	color: #000000c2;
+}
+
 .domain-config .card-body {
 	background-color: #39404a;
 }
@@ -92,3 +99,9 @@ header {
 	background-color: #00000044;
 }
 
+.toast {
+	position: fixed;
+	bottom: 2em;
+	right: 2em;
+	z-index: 90;
+}

@@ -3,3 +3,4 @@ node_modules/
 /ui/public/bundle/
 /wasm/build-vars
 /build-vars
+secrets
