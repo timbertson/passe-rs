@@ -1,10 +1,9 @@
 use std::borrow::Cow;
 
-mod clipboard;
-
 use log::*;
 use anyhow::*;
 use clap::{Arg, ArgAction, Command};
+use arboard::Clipboard;
 
 use passe_core::*;
 use passe_core::password::*;
@@ -28,7 +27,7 @@ pub fn main() -> Result<()> {
 	
 	let mut config = Config::load_user()?;
 	let get_domain = || opts.get_one::<String>("domain").ok_or_else(|| anyhow!("Domain required"));
-
+	
 	if opts.get_flag("list") {
 		for domain in config.domain_list() {
 			println!("{}", domain)
@@ -61,10 +60,23 @@ pub fn main() -> Result<()> {
 		let password = rpassword::prompt_password("Master password: ").unwrap();
 		let generated = password::generate(Domain(domain), Password(&password), domain_config.underlying());
 
-		let copied: Result<()> = clipboard::copy(&generated);
-		match copied {
-			Result::Ok(()) => {
-				println!("(copied to your clipboard)");
+		// finalize early in this branch, since we wait below and an impatient user may ctrl+c
+		finalize(&mut config)?;
+
+		match Clipboard::new() {
+			Result::Ok(mut clipboard) => {
+				let suffix = "";
+
+				#[cfg(target_os = "linux")]
+				let set = clipboard.set().wait();
+				#[cfg(target_os = "linux")]
+				let suffix = "; paste to terminate";
+
+				#[cfg(not(target_os = "linux"))]
+				let set = clipboard.set();
+
+				println!("(copied to your clipboard{})", suffix);
+				set.text(&generated)?;
 			},
 			Result::Err(e) => {
 				error!("Clipboard failed: {:?}", e);
@@ -74,8 +86,11 @@ pub fn main() -> Result<()> {
 		}
 	}
 
-	config.save_user()?;
-	Ok(())
+	finalize(&mut config)
+}
+
+fn finalize(config: &mut Config) -> Result<()> {
+	config.save_user()
 }
 
 fn make_url(suffix: &'static str) -> String {
