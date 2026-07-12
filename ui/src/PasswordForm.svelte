@@ -27,11 +27,7 @@ let selectedSuggestion: number|null = $derived.by(() => {
 });
 
 function mask(password: String) {
-	if (maskPassword) {
-		return '●'.repeat(password.length);
-	} else {
-		return password;
-	}
+	return '●'.repeat(password.length);
 }
 
 function generatedPasswordInput(): null|HTMLInputElement {
@@ -66,8 +62,10 @@ async function generate(ev: Event) {
 		console.info('empty domain or password');
 	} else {
 		generatedPassword = db.generatePassword(domain(), password);
-		await copyToClipboard(generatedPassword);
-		setTimeout(() => generatedPasswordInput()?.focus(),5);
+		const copied = await copyToClipboard(generatedPassword);
+		if (!copied) {
+			setTimeout(() => generatedPasswordInput()?.focus(),5);
+		}
 	}
 }
 
@@ -228,9 +226,13 @@ function stopPropagation(ev: Event) {
 					<div class="row">
 						<div class="col">
 							<!-- Generated password: -->
-							<div class="password dummy">{mask(generatedPassword)}
-								<input type="text" name="generated-password" class="password password-value" onfocus={generatedFocus} onblur={generatedBlur} value="{generatedPassword}"/>
-							</div>
+							{#if maskPassword}
+								<div class="password dummy">{mask(generatedPassword)}
+									<input type="text" name="generated-password" class="password password-value" onfocus={generatedFocus} onblur={generatedBlur} value="{generatedPassword}"/>
+								</div>
+							{:else}
+								<div class="password dummy">{generatedPassword}</div>
+							{/if}
 						</div>
 						<div class="col text-end">
 							<button class="btn btn-primary" onclick={toggleMask}>show</button>

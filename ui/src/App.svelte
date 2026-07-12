@@ -25,7 +25,7 @@ let initialize = $state(load().catch((e) => {
 
 {#await initialize}
 	<div class="container">
-		<h1>Loading WASM...</h1>
+		<h1 class="text-center mt-5" style="color: #ffffff88;">Loading WASM...</h1>
 	</div>
 {:then db}
 	<UserPanel {db}/>
