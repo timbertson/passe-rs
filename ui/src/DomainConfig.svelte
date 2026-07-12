@@ -48,7 +48,7 @@ const headerClass = () => {
 </script>
 
 <div class="card domain-config">
-	<form onsubmit={submit}>
+	<form onsubmit={submit} autocapitalize="none">
 		<div class="card-header {headerClass()}">
 			<div class="row">
 				<div class="col fs-4">

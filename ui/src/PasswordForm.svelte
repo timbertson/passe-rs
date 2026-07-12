@@ -180,7 +180,7 @@ function stopPropagation(ev: Event) {
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<form onsubmit={generate} onkeydown={baseKeydown} class="password-form">
+<form onsubmit={generate} onkeydown={baseKeydown} class="password-form" autocapitalize="none">
 	<div class="mb-3">
 		<label for="domain" class="form-label">Domain</label>
 		<!-- svelte-ignore a11y_autofocus -->

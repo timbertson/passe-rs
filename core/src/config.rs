@@ -11,8 +11,15 @@ use crate::domain_extractor::DomainExtractor;
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct DomainConfig {
 	pub length: usize,
+
+	#[serde(default)]
+	#[serde(skip_serializing_if = "Option::is_none")]
 	pub suffix: Option<String>, // suffix for password
 	// pub post_suffix: Option<String>, // suffix for generated password
+
+	#[serde(alias = "hint")]
+	#[serde(default)]
+	#[serde(skip_serializing_if = "Option::is_none")]
 	pub note: Option<String>,
 }
 
@@ -252,6 +259,7 @@ impl Config {
 	pub fn update_after_sync(&mut self, merged: Domains) {
 		self.data.domains = merged;
 		self.data.changes = Default::default();
+		self.dirty = true;
 	}
 
 	pub fn update_after_login(&mut self, auth: Authentication) {

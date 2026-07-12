@@ -26,14 +26,14 @@ function clearAuthentication(ev: Event) {
 				</div>
 			{:then user}
 				<div class="row">
-					<div class="col-md">
+					<div class="col">
 						<span class="fs-4"><strong>passe</strong></span>
 					</div>
-					<div class="col-md text-center fs-4">
+					<div class="col text-center fs-4">
 						<span>{user}</span>
 						<button class="btn btn-outline-secondary" onclick={clearAuthentication}>x</button>
 					</div>
-					<div class="col-md text-end">
+					<div class="col text-end">
 						{#await db.userState.syncTask}
 							...
 						{:then}

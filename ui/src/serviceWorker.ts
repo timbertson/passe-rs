@@ -15,7 +15,6 @@ async function dumpCacheContents() {
 self.addEventListener('message', async (event) => {
 	const message = event.data;
 	console.log(`Service worker v${DEBUG_VERSION} saw ${message}`);
-	dumpCacheContents();
 
 	if (message == 'loaded') {
 		claimClients();
@@ -31,7 +30,7 @@ self.addEventListener("activate", async (event: Event) => {
 });
 
 const notFound = new Response("Network error", {
-	status: 408,
+	status: 404,
 	headers: { "Content-Type": "text/plain" },
 });
 

@@ -96,7 +96,7 @@ header .btn-link {
 }
 
 .password-form input[type=text], .password-form input[type=password] {
-	background-color: #00000044;
+	background-color: #343536ad;
 }
 
 .toast {

@@ -3,7 +3,7 @@ import { Db } from './Db';
 const { db } : { db: Db } = $props();
 </script>
 
-<form onsubmit={db.submitLogin}>
+<form onsubmit={db.submitLogin} autocapitalize="none">
 	<div class="row">
 		<div class="col-md">
 			<span class="fs-4 mb-2">passe</span>
