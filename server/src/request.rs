@@ -36,7 +36,7 @@ impl<'r> rocket::request::FromRequest<'r> for AuthenticatedUser {
 	async fn from_request(request: &'r rocket::Request<'_>) -> Outcome<Self, Self::Error> {
 		// TODO lots of pattern matching here, seems primitive
 		match request.headers().get_one("authorization") {
-			None => Outcome::Error((http::Status::BadRequest, "header missing")),
+			None => Outcome::Error((http::Status::Unauthorized, "header missing")),
 			Some(header) => {
 				match serde_json::from_str::<Authentication>(header) {
 					Result::Ok(auth) => {

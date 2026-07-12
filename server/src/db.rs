@@ -174,7 +174,7 @@ impl UserDB {
 		Self::load_file(self.persistence.as_ref(), File::UserDB(user.name()))
 	}
 
-	pub fn sync_changes(&mut self, user: &AuthenticatedUser, client_changes: config::Changes) -> Result<ConfigFile> {
+	pub fn sync_changes(&mut self, user: &AuthenticatedUser, client_changes: config::Changes) -> Result<config::Domains> {
 		let mut config = self.user_db(user)?;
 		for (domain, change) in client_changes {
 			match change {
@@ -184,7 +184,7 @@ impl UserDB {
 		}
 		config.changes = Default::default();
 		Self::save_file(self.persistence.as_ref(), File::UserDB(user.name()), &config)?;
-		Ok(config)
+		Ok(config.domains)
 	}
 
 	fn is_dirty(&self) -> bool {

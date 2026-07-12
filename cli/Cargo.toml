@@ -12,7 +12,7 @@ passe-core = { path = "../core" }
 clap = { version = "4.6" }
 rpassword = "7.5"
 rprompt = "2"
-ureq = { version = "3", features = ["json"] }
+ureq = { version = "3", features = ["json", "platform-verifier"] }
 env_logger = "0.11.10"
 arboard = { version = "3.6.1", features = ["wayland-data-control"] }
 

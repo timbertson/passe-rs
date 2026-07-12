@@ -4,10 +4,12 @@ use log::*;
 use anyhow::*;
 use clap::{Arg, ArgAction, Command};
 use arboard::Clipboard;
+use ureq::Agent;
+use ureq::tls::{TlsConfig, RootCerts};
 
 use passe_core::*;
 use passe_core::password::*;
-use passe_core::config::Config;
+use passe_core::config::{Config, Domains};
 use passe_core::auth::*;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -17,7 +19,7 @@ pub fn main() -> Result<()> {
 	let app = Command::new("passe")
 		.arg(Arg::new("edit").long("edit").action(ArgAction::SetTrue))
 		.arg(Arg::new("sync").long("sync").action(ArgAction::SetTrue))
-		// .arg(Arg::new("full").long("full").help("Do a full (initial) sync"))
+		.arg(Arg::new("full").long("full").action(ArgAction::SetTrue).help("Do a full (initial) sync"))
 		.arg(Arg::new("list").long("list").short('l').action(ArgAction::SetTrue))
 		.arg(Arg::new("domain").required(false))
 	;
@@ -34,13 +36,18 @@ pub fn main() -> Result<()> {
 		}
 	} else if opts.get_flag("sync") {
 		info!("Syncing ...");
+
+		let agent = Agent::config_builder()
+			.tls_config(TlsConfig::builder().root_certs(RootCerts::PlatformVerifier).build())
+			.build()
+			.new_agent();
+
 		let changes = if opts.contains_id("full") {
-			Cow::Owned(config.full_changes())
+			config.full_changes()
 		} else {
-			Cow::Borrowed(config.changes())
+			config.changes().to_owned()
 		};
-		let data = serde_json::to_string(&changes)?;
-		let sync_result = authed_request(&mut config, "db", Some(&data))?;
+		let sync_result: Domains = authed_request(&agent, &mut config, "db", Some(&changes))?;
 		config.update_after_sync(sync_result);
 	} else if opts.get_flag("edit") {
 		let domain = get_domain().context("for --edit")?;
@@ -55,9 +62,9 @@ pub fn main() -> Result<()> {
 		debug!("domain config: {:?}", &domain_config);
 		domain_config.as_ref().print();
 		if let config::Defaulted::Default(_) = domain_config {
-			println!("* This is a new domain");
+			println!("* new domain: {}", &domain);
 		}
-		let password = rpassword::prompt_password("Master password: ").unwrap();
+		let password = rpassword::prompt_password("Password: ").unwrap();
 		let generated = password::generate(Domain(domain), Password(&password), domain_config.underlying());
 
 		// finalize early in this branch, since we wait below and an impatient user may ctrl+c
@@ -94,35 +101,42 @@ fn finalize(config: &mut Config) -> Result<()> {
 }
 
 fn make_url(suffix: &'static str) -> String {
-	let root = std::env::var("PASSE_SERVER").unwrap_or_else(|_| "http://localhost:8000".to_owned());
+	let root = std::env::var("PASSE_SERVER").unwrap_or_else(|_| "https://passe-458142165195.australia-southeast2.run.app".to_owned());
 	format!("{}/{}", root, suffix)
 }
 
-fn login(credentials: &LoginRequest) -> Result<Authentication> {
-	Ok(ureq::post(&make_url("authenticate"))
+fn login(agent: &Agent, credentials: &LoginRequest) -> Result<Authentication> {
+	Ok(agent.post(&make_url("login"))
 		.send_json(&credentials)?
 		.body_mut()
 		.read_json::<Authentication>()?)
 }
 
-fn authed_request<Data: Serialize, Response: DeserializeOwned>(auth_manager: &mut dyn AuthManager, path: &'static str, data: Option<&Data>) -> Result<Response> {
+fn authed_request<Data: Serialize, Response: DeserializeOwned>(agent: &Agent, auth_manager: &mut dyn AuthManager, path: &'static str, data: Option<&Data>) -> Result<Response> {
 	let url = make_url(path);
+	debug!("Request URL: {}", &url);
 	let do_req = |auth: &Authentication| {
 		let auth_header = serde_json::to_string(auth)?;
 		let response = match data {
-			None => ureq::get(&url)
+			None => agent.get(&url)
 				.header("Authorization", &auth_header)
 				.call(),
 
-			Some(data) => ureq::post(&url)
+			Some(data) => agent.post(&url)
 				.header("Authorization", &auth_header)
 				.header("Content-type", "application/json")
 				.send_json(data),
 		};
 		match response {
 			Result::Ok(mut result) => Ok(Some(result.body_mut().read_json::<Response>()?)),
-			Result::Err(ureq::Error::StatusCode(401)) => Ok(None),
-			Result::Err(other) => Err(other.into()),
+			Result::Err(ureq::Error::StatusCode(401)) => {
+				debug!("401; returning None");
+				Ok(None)
+			},
+			Result::Err(other) => {
+				debug!("Unknown error: {:?}", &other);
+				Err(other.into())
+			},
 		}
 	};
 
@@ -134,7 +148,7 @@ fn authed_request<Data: Serialize, Response: DeserializeOwned>(auth_manager: &mu
 		Some(result) => result,
 		None => {
 			let creds = auth_manager.ask_credentials()?;
-			let auth = login(&creds)?;
+			let auth = login(&agent, &creds)?;
 			auth_manager.set(auth.clone());
 			do_req(&auth)?.ok_or_else(||anyhow!("Unauthorized"))
 		}

@@ -6,6 +6,7 @@ mod storage;
 mod request;
 
 use std::net::{IpAddr, Ipv4Addr};
+use rocket::http;
 use rocket::State;
 use rocket::response;
 use rocket::serde::json::Json;
@@ -14,7 +15,7 @@ use rocket::fs::{self, FileServer};
 use passe_core::auth::{LoginRequest, Authentication};
 use passe_core::config;
 
-use crate::error::HttpResult;
+use crate::error::{HttpResult, HttpError};
 use crate::request::*;
 
 use anyhow::*;
@@ -28,13 +29,18 @@ fn index() -> response::Redirect {
 #[post("/register", data="<data>")]
 fn register(data: Json<LoginRequest>, state: &State<DbMutex>) -> HttpResult<Json<Authentication>> {
 	state.lock().register(&data)?;
-	login(data, state)
+	login(data, state).map_err(|status| {
+		HttpError::from(anyhow!("{:?}", status))
+	})
 }
 
 #[post("/login", data="<data>")]
-fn login(data: Json<LoginRequest>, state: &State<DbMutex>) -> HttpResult<Json<Authentication>> {
+fn login(data: Json<LoginRequest>, state: &State<DbMutex>) -> Result<Json<Authentication>, http::Status> {
 	let login_request = data.0;
-	let token = state.lock().login(&login_request)?;
+	let token = state.lock().login(&login_request).map_err(|e| {
+		debug!("Login failed: {:?}", &e);
+		http::Status::Unauthorized
+	})?;
 	Result::Ok(Json(Authentication {
 		user: login_request.user, token: token.value
 	}))
@@ -51,7 +57,7 @@ fn get_db(user: AuthenticatedUser, state: &State<DbMutex>) -> HttpResult<Json<co
 }
 
 #[post("/db", data="<data>")]
-fn post_db(user: AuthenticatedUser, data: Json<config::Changes>, state: &State<DbMutex>) -> HttpResult<Json<config::ConfigFile>> {
+fn post_db(user: AuthenticatedUser, data: Json<config::Changes>, state: &State<DbMutex>) -> HttpResult<Json<config::Domains>> {
 	Result::Ok(Json(state.lock().sync_changes(&user, data.0)?))
 }
 

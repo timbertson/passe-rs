@@ -6,7 +6,7 @@ use passe_core::password;
 use passe_core::password::{Password, Domain};
 
 use web_sys::{Request, RequestInit};
-use passe_core::config::{self, ConfigFile, DomainConfig};
+use passe_core::config::{self, DomainConfig};
 
 const CONTENT_TYPE: &str = "content-type";
 const AUTHORIZATION: &str = "authorization";
@@ -73,7 +73,7 @@ impl Config {
 		Result::Ok(request)
 	}
 	
-	pub fn update_auth(&mut self, auth_json: JsValue) -> JsResult<()> {
+	pub fn update_after_login(&mut self, auth_json: JsValue) -> JsResult<()> {
 		let auth_result = serde_wasm_bindgen::from_value(auth_json);
 		self.0.update_after_login(auth_result?);
 		Ok(())
@@ -92,10 +92,9 @@ impl Config {
 		Result::Ok(request)
 	}
 
-	pub fn set_db(&mut self, db_json: JsValue) -> JsResult<()> {
-		let mut db: ConfigFile = serde_wasm_bindgen::from_value(db_json)?;
-		db.authentication = self.0.data.authentication.clone();
-		self.0.data = db;
+	pub fn update_after_sync(&mut self, db_json: JsValue) -> JsResult<()> {
+		let result: config::Domains = serde_wasm_bindgen::from_value(db_json)?;
+		self.0.update_after_sync(result);
 		Ok(())
 	}
 	

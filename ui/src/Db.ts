@@ -113,7 +113,7 @@ export class Db {
 	}
 	
 	private update_after_login(auth: Authentication) {
-		this.config.update_auth(auth);
+		this.config.update_after_login(auth);
 		this.save();
 		return auth.user;
 	}
@@ -147,7 +147,7 @@ export class Db {
 			const req = this.config.sync_request();
 			const newDb = await fetchReq<Object>(req);
 			console.log("sync completed");
-			this.config.set_db(newDb);
+			this.config.update_after_sync(newDb);
 			this.save();
 			this.markDbUpdated();
 		})();
