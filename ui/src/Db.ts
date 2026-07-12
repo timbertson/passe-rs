@@ -128,6 +128,7 @@ export class Db {
 	clearAuthentication = () => {
 		this.config.clear_authentication();
 		this.userState.authenticateTask = null;
+		this.userState.loginTask = null;
 		this.save();
 	}
 	

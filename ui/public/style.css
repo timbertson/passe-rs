@@ -75,8 +75,13 @@ header {
 	background-color: #457a57;
 }
 
-header .btn-link {
-	color: #000000c2;
+header .btn-link, header a {
+	color: #ffffff88;
+	text-decoration: none;
+}
+
+header .btn-link:hover, header a:hover {
+	color: white;
 }
 
 .domain-config .card-body {

@@ -16,7 +16,7 @@ const { db } : { db: Db } = $props();
 				<button type="submit" class="btn btn-primary">Login</button>
 
 				<div class="btn-group" role="group" aria-label="Default button group">
-					<button type="submit" class="btn btn-link" onclick={db.submitRegister}>Register</button>
+					<button type="submit" class="btn btn-link" onclick={db.submitRegister}>⊕</button>
 				</div>
 			</div>
 		</div>
