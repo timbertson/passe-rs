@@ -7,6 +7,9 @@ use arboard::Clipboard;
 use ureq::Agent;
 use ureq::tls::{TlsConfig, RootCerts};
 
+#[cfg(target_os = "linux")]
+use arboard::SetExtLinux;
+
 use passe_core::*;
 use passe_core::password::*;
 use passe_core::config::{Config, Domains};
@@ -72,7 +75,6 @@ pub fn main() -> Result<()> {
 
 		match Clipboard::new() {
 			Result::Ok(mut clipboard) => {
-				let suffix = "";
 
 				#[cfg(target_os = "linux")]
 				let set = clipboard.set().wait();
@@ -81,6 +83,8 @@ pub fn main() -> Result<()> {
 
 				#[cfg(not(target_os = "linux"))]
 				let set = clipboard.set();
+				#[cfg(not(target_os = "linux"))]
+				let suffix = "";
 
 				println!("(copied to your clipboard{})", suffix);
 				set.text(&generated)?;
